@@ -76,17 +76,7 @@
             <template lwc:if={hasNoRecords}>
                 <div class="slds-align_absolute-center slds-p-vertical_large">
                     <div class="slds-text-align_center">
-                        <div class="slds-p-bottom_medium">
-                            <lightning-icon 
-                                icon-name={listIcon} 
-                                size="large" 
-                                class="slds-icon-text-light">
-                            </lightning-icon>
-                        </div>
-                        <div class="slds-text-heading_medium slds-p-bottom_small">
-                            No {selectedObject} Found
-                        </div>
-                        <div class="slds-text-body_regular slds-text-color_weak">
+                        <div class="slds-text-heading_medium">
                             {emptyStateMessage}
                         </div>
                     </div>

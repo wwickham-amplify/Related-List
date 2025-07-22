@@ -1,13 +1,15 @@
-import { LightningElement, api, track, wire } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import getAvailableObjects from '@salesforce/apex/RelatedListController.getAvailableObjects';
 import getObjectConfiguration from '@salesforce/apex/RelatedListController.getObjectConfiguration';
 import getRelatedRecords from '@salesforce/apex/RelatedListController.getRelatedRecords';
+import getIconName from '@salesforce/apex/RelatedListController.getIconName';
 
 export default class RelatedList extends LightningElement {
     // Public properties
     @api recordId; // The parent record ID
     @api selectedObject = 'Files'; // The object API name to display
+    @api relatedListLabel = 'Related Records'; // The display label for the list
+    @api fieldSetName = 'RelatedList'; // The field set API name to use for columns
     @api recordLimit = 6; // Number of records to show
     
     // Private reactive properties
@@ -19,6 +21,7 @@ export default class RelatedList extends LightningElement {
     @track sortField = '';
     @track sortDirection = 'ASC';
     @track wrapText = false;
+    @track actualIconName = 'standard:record'; // Will be populated by loadIconName
 
     // Lifecycle hooks
     connectedCallback() {
@@ -26,18 +29,35 @@ export default class RelatedList extends LightningElement {
         console.log('Record ID:', this.recordId);
         console.log('Selected Object:', this.selectedObject);
         
+        this.loadIconName();
         this.loadConfiguration();
+    }
+
+    // Load icon name directly (not cached)
+    async loadIconName() {
+        try {
+            console.log('Loading icon name for:', this.selectedObject);
+            const iconName = await getIconName({ sObjectName: this.selectedObject });
+            this.actualIconName = iconName;
+            console.log('Icon loaded for ' + this.selectedObject + ': ' + iconName);
+        } catch (error) {
+            console.error('Error loading icon:', error);
+            this.actualIconName = this.selectedObject.endsWith('__c') ? 'standard:custom' : 'standard:record';
+        }
     }
 
     // Computed properties
     get listTitle() {
         const count = this.records.length;
-        const label = this.objectConfig?.objectLabel || this.selectedObject;
-        return `${label} (${count})`;
+        return `${this.relatedListLabel} (${count})`;
     }
 
     get listIcon() {
-        return this.objectConfig?.icon || 'standard:record';
+        return this.actualIconName || this.objectConfig?.icon || 'standard:record';
+    }
+
+    get emptyStateMessage() {
+        return `No ${this.relatedListLabel.toLowerCase()} found.`;
     }
 
     get showActionButton() {
@@ -66,11 +86,6 @@ export default class RelatedList extends LightningElement {
 
     get hasMoreRecords() {
         return this.records.length > this.recordLimit;
-    }
-
-    get emptyStateMessage() {
-        const label = this.objectConfig?.objectLabel?.toLowerCase() || 'records';
-        return `No ${label} found.`;
     }
 
     get showCardView() {
@@ -147,7 +162,8 @@ export default class RelatedList extends LightningElement {
         try {
             const config = await getObjectConfiguration({
                 objectApiName: this.selectedObject,
-                parentRecordId: this.recordId
+                parentRecordId: this.recordId,
+                fieldSetName: this.fieldSetName
             });
 
             console.log('Object configuration:', config);
@@ -313,6 +329,7 @@ export default class RelatedList extends LightningElement {
     changeObject(newObjectApiName) {
         console.log('Changing object to:', newObjectApiName);
         this.selectedObject = newObjectApiName;
+        this.loadIconName();
         this.loadConfiguration();
     }
 }

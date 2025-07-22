@@ -24,6 +24,14 @@
                       description="Enter the API name of the object to display. Examples: 'Files' (for file attachments), 'Account', 'Case', 'Internal_Asset_Request__c', 'Knowledge__kav'"
                       default="Files"/>
                       
+            <property name="relatedListLabel" type="String" label="Related List Label" 
+                      description="The display name for this related list (e.g., 'Files', 'Internal Asset Requests', 'Knowledge Articles')"
+                      default="Related Records"/>
+                      
+            <property name="fieldSetName" type="String" label="Field Set API Name" 
+                      description="Enter the API name of the field set to use for columns. Not needed for 'Files' object. Example: 'RelatedList'"
+                      default="RelatedList"/>
+                      
             <property name="recordLimit" type="Integer" label="Record Limit" 
                       description="Maximum number of records to display before showing 'View All'"
                       default="6"/>
