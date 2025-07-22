@@ -3,7 +3,7 @@
     <apiVersion>64.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Custom Related List</masterLabel>
-    <description>A configurable related list component that supports Files, Internal Asset Requests, and Knowledge Articles</description>
+    <description>A configurable related list component that supports Files, Internal Asset Requests, Knowledge Articles, and any Salesforce object</description>
     <targets>
         <target>lightningCommunity__Page</target>
         <target>lightningCommunity__Default</target>
@@ -11,30 +11,45 @@
     <targetConfigs>
         <targetConfig targets="lightningCommunity__Default">
             <!-- =========================== -->
-            <!-- COMPONENT CONFIGURATION     -->
+            <!-- CORE CONFIGURATION          -->
             <!-- =========================== -->
             <property name="recordId" type="String" label="Record ID" 
                       description="The parent record ID. Use {!recordId} to dynamically use the current record ID."
                       default="{!recordId}"/>
-                      
-            <!-- =========================== -->
-            <!-- RELATED LIST SETTINGS       -->
-            <!-- =========================== -->
+            
             <property name="selectedObject" type="String" label="Object API Name" 
-                      description="Enter the API name of the object to display. Examples: 'Files' (for file attachments), 'Account', 'Case', 'Internal_Asset_Request__c', 'Knowledge__kav'"
+                      description="API name of the object to display. Examples: 'Files', 'Account', 'Case', 'Internal_Asset_Request__c', 'Knowledge__kav'"
                       default="Files"/>
-                      
+            
             <property name="relatedListLabel" type="String" label="Related List Label" 
-                      description="The display name for this related list (e.g., 'Files', 'Internal Asset Requests', 'Knowledge Articles')"
-                      default="Related Records"/>
-                      
+                      description="Display name for this related list. Leave blank for auto-generated labels based on object type."
+                      default=""/>
+            
+            <!-- =========================== -->
+            <!-- OBJECT-SPECIFIC SETTINGS    -->
+            <!-- =========================== -->
             <property name="fieldSetName" type="String" label="Field Set API Name" 
-                      description="Enter the API name of the field set to use for columns. Not needed for 'Files' object. Example: 'RelatedList'"
-                      default="RelatedList"/>
-                      
+                      description="For non-Files objects: Field set defining columns to display. Leave blank for smart defaults. Files objects ignore this setting."
+                      default=""/>
+            
             <property name="recordLimit" type="Integer" label="Record Limit" 
-                      description="Maximum number of records to display before showing 'View All'"
-                      default="6"/>
+                      description="Number of records to display before showing 'View All'. Use 0 for smart defaults (Files: 8, Others: 6)."
+                      default="0"/>
+            
+            <!-- =========================== -->
+            <!-- FILES-SPECIFIC SETTINGS     -->
+            <!-- =========================== -->
+            <property name="disableFileUpload" type="Boolean" label="Disable File Upload" 
+                      description="Check this box to disable file upload functionality for Files objects. Upload is enabled by default."
+                      default="false"/>
+            
+            <property name="maxFileSize" type="Integer" label="Max File Size (MB)" 
+                      description="Maximum file size in megabytes for uploads. Only applies to Files objects."
+                      default="25"/>
+            
+            <property name="acceptedFileTypes" type="String" label="Accepted File Types" 
+                      description="Comma-separated file extensions (e.g., '.pdf,.doc,.jpg') or leave blank for all types. Only applies to Files objects."
+                      default=""/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

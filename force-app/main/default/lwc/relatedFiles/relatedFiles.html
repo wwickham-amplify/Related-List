@@ -1,0 +1,101 @@
+<!-- relatedFiles-simple.html - Enhanced with Card View -->
+<template>
+    <div class="slds-card">
+        <!-- Header -->
+        <div class="slds-card__header slds-grid">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__figure">
+                    <span class="slds-icon_container">
+                        <lightning-icon 
+                            icon-name="doctype:attachment" 
+                            size="small" 
+                            alternative-text="Files">
+                        </lightning-icon>
+                    </span>
+                </div>
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                        <span class="slds-text-heading_small">{listTitleWithCount}</span>
+                    </h2>
+                </div>
+                <div class="slds-no-flex">
+                    <lightning-button
+                        label="Add Files"
+                        icon-name="utility:attach"
+                        icon-position="left"
+                        variant="brand-outline"
+                        disabled={isLoading}>
+                    </lightning-button>
+                </div>
+            </header>
+        </div>
+
+        <!-- Body -->
+        <div class="slds-card__body slds-card__body_inner">
+            <!-- Loading -->
+            <template if:true={isLoading}>
+                <div class="slds-align_absolute-center slds-p-vertical_large">
+                    <lightning-spinner alternative-text="Loading files..." size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <!-- Error -->
+            <template if:true={hasError}>
+                <div class="slds-align_absolute-center slds-p-vertical_large">
+                    <div class="slds-text-align_center">
+                        <div class="slds-text-color_error">
+                            <strong>Error: {errorMessage}</strong>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- No Files -->
+            <template if:true={hasNoFiles}>
+                <div class="slds-align_absolute-center slds-p-vertical_large">
+                    <div class="slds-text-align_center">
+                        <div class="slds-p-bottom_medium">
+                            <lightning-icon 
+                                icon-name="doctype:attachment" 
+                                size="large" 
+                                class="slds-icon-text-light">
+                            </lightning-icon>
+                        </div>
+                        <div class="slds-text-heading_medium">No files found.</div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Files Grid -->
+            <template if:true={hasFiles}>
+                <div class="slds-m-top_small">
+                    <div class="attachment-container">
+                        <template for:each={files} for:item="file">
+                            <div key={file.id} class="attachment-item">
+                                <div class="slds-box slds-box_x-small slds-theme_shade">
+                                    <div class="slds-grid slds-grid_vertical-align-center">
+                                        <div class="slds-col slds-no-flex slds-m-right_x-small">
+                                            <lightning-icon 
+                                                icon-name={file.icon} 
+                                                size="small"
+                                                alternative-text="File">
+                                            </lightning-icon>
+                                        </div>
+                                        <div class="slds-col slds-has-flexi-truncate">
+                                            <div class="slds-text-body_regular slds-text-color_default slds-truncate" title={file.title}>
+                                                {file.title}
+                                            </div>
+                                            <div class="slds-text-body_small slds-text-color_weak">
+                                                Jul 22, 2025 • {file.formattedSize} • {file.fileExtension}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

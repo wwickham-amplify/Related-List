@@ -1,0 +1,301 @@
+/* relatedFiles.css - Matching Case Feed Publisher attachment styling */
+
+/* Card styling */
+.slds-card {
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+    border: 1px solid rgb(221, 219, 218);
+    border-radius: 0.25rem;
+}
+
+/* Icon spacing in header */
+.slds-media__figure .slds-icon_container {
+    margin-right: 0.75rem;
+}
+
+/* Empty state icon styling */
+.slds-icon-text-light {
+    color: #b0adab;
+}
+
+/* Attachment container - Two column grid like Case Feed Publisher */
+.attachment-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem;
+    max-width: 100%;
+}
+
+/* Individual attachment items */
+.attachment-item {
+    max-width: 400px;
+}
+
+/* File attachment box styling from caseFeedPublisher.css */
+.slds-box_x-small {
+    padding: 0.5rem;
+}
+
+/* Responsive - single column on mobile */
+@media (max-width: 768px) {
+    .attachment-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Loading and error states */
+.slds-align_absolute-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+/* Button styling consistency */
+lightning-button {
+    --slds-c-button-neutral-color-border: var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3));
+    --slds-c-button-neutral-color-border-hover: var(--dxp-s-form-element-color-border-focus, var(--dxp-g-brand));
+}
+
+/* Ensure proper text truncation */
+.slds-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}/* relatedFiles.css */
+
+/* Card styling to match SLDS standards */
+.slds-card {
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+    border: 1px solid rgb(221, 219, 218);
+    border-radius: 0.25rem;
+}
+
+/* Icon spacing in header */
+.slds-media__figure .slds-icon_container {
+    margin-right: 0.75rem;
+}
+
+/* Empty state icon styling */
+.slds-icon-text-light {
+    color: #b0adab;
+}
+
+/* File card styling */
+.file-card {
+    padding: 0.75rem;
+    border: 1px solid #d8dde6;
+    border-radius: 0.25rem;
+    transition: all 0.1s ease;
+    cursor: pointer;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-card:hover {
+    background-color: #f3f3f3;
+    border-color: #c9c7c5;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* File header */
+.file-header {
+    flex-shrink: 0;
+}
+
+/* File preview area */
+.file-preview-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+    position: relative;
+}
+
+/* Image preview container */
+.image-preview-container {
+    position: relative;
+    width: 100%;
+    max-width: 120px;
+    aspect-ratio: 1 / 1;
+    border-radius: 0.25rem;
+    overflow: hidden;
+    border: 1px solid #d8dde6;
+    cursor: pointer;
+}
+
+.file-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.preview-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.image-preview-container:hover .preview-overlay {
+    opacity: 1;
+}
+
+/* File icon container */
+.file-icon-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 0.25rem;
+    background-color: #fafaf9;
+    border: 1px solid #e5e5e5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.file-icon-container:hover {
+    background-color: #f3f3f3;
+    border-color: #d8dde6;
+}
+
+.icon-overlay {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    padding: 2px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.file-icon-container:hover .icon-overlay {
+    opacity: 1;
+}
+
+/* File actions */
+.file-actions {
+    flex-shrink: 0;
+    align-items: center;
+    margin-top: auto;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+/* Grid layout customization */
+.slds-grid.slds-wrap.slds-gutters_small {
+    margin: 0;
+}
+
+.slds-col {
+    padding: 0.25rem;
+}
+
+/* Card size variations */
+.file-card.small {
+    min-height: 140px;
+}
+
+.file-card.medium {
+    min-height: 160px;
+}
+
+.file-card.large {
+    min-height: 200px;
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+    .file-card {
+        padding: 0.5rem;
+    }
+    
+    .file-preview-area {
+        min-height: 60px;
+    }
+    
+    .file-icon-container {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .image-preview-container {
+        max-width: 80px;
+    }
+    
+    .slds-col {
+        padding: 0.125rem;
+    }
+}
+
+/* Loading and error states */
+.slds-align_absolute-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+/* Button styling consistency */
+lightning-button {
+    --slds-c-button-neutral-color-border: var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3));
+    --slds-c-button-neutral-color-border-hover: var(--dxp-s-form-element-color-border-focus, var(--dxp-g-brand));
+}
+
+/* Preview and action button styling */
+lightning-button-icon {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+lightning-button-icon:hover {
+    opacity: 1;
+}
+
+/* Ensure proper text truncation */
+.slds-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Enhanced hover states for better UX */
+.file-card:hover .action-buttons {
+    opacity: 1;
+}
+
+.action-buttons {
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+/* Accessibility improvements */
+.file-card:focus {
+    outline: 2px solid #0070d2;
+    outline-offset: 2px;
+}
+
+/* Animation for smooth state transitions */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.file-card {
+    animation: fadeIn 0.3s ease-out;
+}

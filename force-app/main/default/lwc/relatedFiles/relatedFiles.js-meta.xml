@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>64.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Related Files</masterLabel>
+    <description>File attachments component with upload, preview, and download capabilities</description>
+    <targets>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <!-- =========================== -->
+            <!-- CORE CONFIGURATION          -->
+            <!-- =========================== -->
+            <property name="recordId" type="String" label="Record ID" 
+                      description="The parent record ID. Use {!recordId} to dynamically use the current record ID."
+                      default="{!recordId}"/>
+            
+            <property name="listTitle" type="String" label="List Title" 
+                      description="Display name for the file list. Leave blank for 'Files'."
+                      default=""/>
+            
+            <property name="recordLimit" type="Integer" label="Files to Show" 
+                      description="Number of files to display before showing 'View All'. Default is 8."
+                      default="8"/>
+            
+            <!-- =========================== -->
+            <!-- FILE UPLOAD SETTINGS        -->
+            <!-- =========================== -->
+            <property name="disableFileUpload" type="Boolean" label="Disable File Upload" 
+                      description="Check this box to disable file upload functionality. Upload is enabled by default."
+                      default="false"/>
+            
+            <property name="maxFileSize" type="Integer" label="Max File Size (MB)" 
+                      description="Maximum file size in megabytes for uploads. Default is 25 MB."
+                      default="25"/>
+            
+            <property name="acceptedFileTypes" type="String" label="Accepted File Types" 
+                      description="Comma-separated file extensions (e.g. '.pdf,.doc,.jpg') or leave blank to accept all file types."
+                      default=""/>
+            
+            <!-- =========================== -->
+            <!-- DISPLAY SETTINGS            -->
+            <!-- =========================== -->
+            <property name="showThumbnails" type="Boolean" label="Show Image Thumbnails" 
+                      description="Display thumbnail previews for image files. Enabled by default."
+                      default="false"/>
+            
+            <property name="cardSize" type="String" label="File Card Size" 
+                      description="Size of file cards: 'small', 'medium', or 'large'. Default is 'medium'."
+                      default="medium"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

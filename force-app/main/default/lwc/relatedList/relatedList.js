@@ -5,12 +5,15 @@ import getRelatedRecords from '@salesforce/apex/RelatedListController.getRelated
 import getIconName from '@salesforce/apex/RelatedListController.getIconName';
 
 export default class RelatedList extends LightningElement {
-    // Public properties
+    // Public properties with smart defaults
     @api recordId; // The parent record ID
     @api selectedObject = 'Files'; // The object API name to display
-    @api relatedListLabel = 'Related Records'; // The display label for the list
-    @api fieldSetName = 'RelatedList'; // The field set API name to use for columns
-    @api recordLimit = 6; // Number of records to show
+    @api relatedListLabel = ''; // The display label for the list (auto-generated if blank)
+    @api fieldSetName = ''; // The field set API name to use for columns (smart defaults if blank)
+    @api recordLimit = 0; // Number of records to show (smart defaults if 0)
+    @api disableFileUpload = false; // Disable file upload (Files only) - when true, disables upload
+    @api maxFileSize = 25; // Max file size in MB (Files only)
+    @api acceptedFileTypes = ''; // Accepted file types (Files only)
     
     // Private reactive properties
     @track records = [];
@@ -28,6 +31,27 @@ export default class RelatedList extends LightningElement {
         console.log('=== RelatedList Connected ===');
         console.log('Record ID:', this.recordId);
         console.log('Selected Object:', this.selectedObject);
+        console.log('=== Smart Defaults Applied ===');
+        console.log('Related List Label:', `"${this.relatedListLabel}" → "${this.computedRelatedListLabel}"`);
+        console.log('Field Set Name:', `"${this.fieldSetName}" → "${this.computedFieldSetName}"`);
+        console.log('Record Limit:', `${this.recordLimit} → ${this.computedRecordLimit}`);
+        
+        // Log Files-specific settings
+        if (this.selectedObject === 'Files') {
+            console.log('=== Files Settings ===');
+            console.log('Allow File Upload:', this.computedAllowFileUpload);
+            console.log('Disable File Upload:', this.disableFileUpload);
+            console.log('Max File Size:', this.maxFileSize + ' MB');
+            console.log('Accepted File Types:', this.acceptedFileTypes || 'All types');
+        }
+        
+        // Validate configuration
+        const configErrors = this.validateConfiguration();
+        if (configErrors) {
+            console.warn('Configuration Issues:', configErrors);
+        } else {
+            console.log('Configuration validated successfully');
+        }
         
         this.loadIconName();
         this.loadConfiguration();
@@ -46,10 +70,71 @@ export default class RelatedList extends LightningElement {
         }
     }
 
+    // Computed properties with smart defaults
+    get computedRelatedListLabel() {
+        if (this.relatedListLabel) {
+            return this.relatedListLabel;
+        }
+        
+        // Auto-generate labels based on object type
+        const labelMap = {
+            'Files': 'Files',
+            'Knowledge__kav': 'Knowledge Articles',
+            'Internal_Asset_Request__c': 'Internal Asset Requests',
+            'Case': 'Related Cases',
+            'Account': 'Related Accounts',
+            'Contact': 'Related Contacts',
+            'Opportunity': 'Related Opportunities'
+        };
+        
+        return labelMap[this.selectedObject] || 'Related Records';
+    }
+    
+    get computedFieldSetName() {
+        // Files don't use field sets
+        if (this.selectedObject === 'Files') {
+            return null;
+        }
+        
+        if (this.fieldSetName) {
+            return this.fieldSetName;
+        }
+        
+        // Smart defaults based on object type
+        const fieldSetMap = {
+            'Knowledge__kav': 'KnowledgeRelatedList',
+            'Internal_Asset_Request__c': 'AssetRequestRelatedList',
+            'Case': 'CaseRelatedList',
+            'Account': 'AccountRelatedList',
+            'Contact': 'ContactRelatedList',
+            'Opportunity': 'OpportunityRelatedList'
+        };
+        
+        return fieldSetMap[this.selectedObject] || 'RelatedList';
+    }
+    
+    get computedRecordLimit() {
+        if (this.recordLimit > 0) {
+            return this.recordLimit;
+        }
+        
+        // Smart defaults: Files show more items since they're smaller cards
+        return this.selectedObject === 'Files' ? 8 : 6;
+    }
+
+    get computedAllowFileUpload() {
+        // For Files objects, allow upload unless explicitly disabled
+        // For non-Files objects, this setting is irrelevant
+        if (this.selectedObject === 'Files') {
+            return !this.disableFileUpload; // Allow upload unless disabled
+        }
+        return false; // Not relevant for non-Files objects
+    }
+
     // Computed properties
     get listTitle() {
         const count = this.records.length;
-        return `${this.relatedListLabel} (${count})`;
+        return `${this.computedRelatedListLabel} (${count})`;
     }
 
     get listIcon() {
@@ -57,15 +142,19 @@ export default class RelatedList extends LightningElement {
     }
 
     get emptyStateMessage() {
-        return `No ${this.relatedListLabel.toLowerCase()} found.`;
+        return `No ${this.computedRelatedListLabel.toLowerCase()} found.`;
     }
 
     get showActionButton() {
+        // Only show action button for Files or if explicitly configured for other objects
         return this.selectedObject === 'Files' || this.objectConfig?.isSpecialObject;
     }
 
     get actionButtonLabel() {
-        return this.selectedObject === 'Files' ? 'Add Files' : 'Add Record';
+        if (this.selectedObject === 'Files') {
+            return this.computedAllowFileUpload ? 'Add Files' : 'Files';
+        }
+        return 'Add Record';
     }
 
     get actionButtonIcon() {
@@ -73,7 +162,7 @@ export default class RelatedList extends LightningElement {
     }
 
     get displayedRecords() {
-        return this.records.slice(0, this.recordLimit);
+        return this.records.slice(0, this.computedRecordLimit);
     }
 
     get hasRecords() {
@@ -85,7 +174,7 @@ export default class RelatedList extends LightningElement {
     }
 
     get hasMoreRecords() {
-        return this.records.length > this.recordLimit;
+        return this.records.length > this.computedRecordLimit;
     }
 
     get showCardView() {
@@ -163,7 +252,7 @@ export default class RelatedList extends LightningElement {
             const config = await getObjectConfiguration({
                 objectApiName: this.selectedObject,
                 parentRecordId: this.recordId,
-                fieldSetName: this.fieldSetName
+                fieldSetName: this.computedFieldSetName
             });
 
             console.log('Object configuration:', config);
@@ -222,8 +311,12 @@ export default class RelatedList extends LightningElement {
         console.log('Action button clicked for:', this.selectedObject);
         
         if (this.selectedObject === 'Files') {
-            // TODO: Implement file upload in Phase 2
-            this.showToast('Info', 'File upload functionality coming in Phase 2', 'info');
+            if (this.computedAllowFileUpload) {
+                // TODO: Implement file upload in Phase 2
+                this.showToast('Info', 'File upload functionality coming in Phase 2', 'info');
+            } else {
+                this.showToast('Info', 'File upload is disabled', 'info');
+            }
         } else {
             // TODO: Implement record creation for other objects
             this.showToast('Info', 'Record creation functionality coming in later phases', 'info');
@@ -331,5 +424,66 @@ export default class RelatedList extends LightningElement {
         this.selectedObject = newObjectApiName;
         this.loadIconName();
         this.loadConfiguration();
+    }
+    
+    // Configuration validation and help methods
+    validateConfiguration() {
+        const errors = [];
+        
+        if (!this.recordId) {
+            errors.push('Record ID is required');
+        }
+        
+        if (!this.selectedObject) {
+            errors.push('Object API Name is required');
+        }
+        
+        // Files-specific validation
+        if (this.selectedObject === 'Files') {
+            if (this.maxFileSize <= 0) {
+                errors.push('Max File Size must be greater than 0');
+            }
+            if (this.maxFileSize > 100) {
+                errors.push('Max File Size should not exceed 100 MB');
+            }
+        }
+        
+        return errors.length > 0 ? errors : null;
+    }
+    
+    getConfigurationHelp() {
+        const help = {
+            objectSpecific: this.getObjectSpecificHelp(),
+            fieldSet: this.getFieldSetHelp(),
+            recordLimit: this.getRecordLimitHelp()
+        };
+        
+        return help;
+    }
+    
+    getObjectSpecificHelp() {
+        const helpMap = {
+            'Files': 'Displays file attachments with upload, preview, and download capabilities. Field Sets are not used.',
+            'Knowledge__kav': 'Displays Knowledge Articles linked via CaseArticle junction object. Recommended Field Set: KnowledgeRelatedList with Title, Summary, Article_Type.',
+            'Internal_Asset_Request__c': 'Displays Internal Asset Request records. Recommended Field Set: AssetRequestRelatedList with Name, Status, Request_Type.',
+            'Case': 'Displays related Case records. Create a Field Set with relevant fields like CaseNumber, Subject, Status, Priority.',
+            'Account': 'Displays related Account records. Create a Field Set with relevant fields like Name, Type, Industry.',
+            'Contact': 'Displays related Contact records. Create a Field Set with relevant fields like Name, Title, Email, Phone.',
+            'Opportunity': 'Displays related Opportunity records. Create a Field Set with relevant fields like Name, Stage, Amount, Close_Date.'
+        };
+        
+        return helpMap[this.selectedObject] || 'Generic object display. Create a Field Set in Setup → Object Manager → [Object] → Field Sets with the fields you want to show.';
+    }
+    
+    getFieldSetHelp() {
+        if (this.selectedObject === 'Files') {
+            return 'Field Sets are not used for Files objects. This setting is ignored.';
+        }
+        
+        return `Current smart default: "${this.computedFieldSetName}". Override this by specifying a custom Field Set name, or create the recommended Field Set in Setup → Object Manager → ${this.selectedObject} → Field Sets.`;
+    }
+    
+    getRecordLimitHelp() {
+        return `Current smart default: ${this.computedRecordLimit} records. Files objects show more items (8) by default since they use smaller card layouts.`;
     }
 }

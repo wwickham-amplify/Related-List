@@ -1,11 +1,11 @@
 /* relatedList.css */
 
 /* Card styling to match SLDS standards */
-.slds-card {
+/* .slds-card {
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
     border: 1px solid rgb(221, 219, 218);
     border-radius: 0.25rem;
-}
+} */
 
 /* Icon spacing in header */
 .slds-media__figure .slds-icon_container {
@@ -54,7 +54,7 @@
     background-color: #f3f3f3;
     border-bottom: 2px solid #d8dde6;
     font-weight: 700;
-    text-transform: uppercase;
+    text-transform: none;
     letter-spacing: 0.0625rem;
     font-size: 0.75rem;
     padding: 0.5rem;
@@ -154,15 +154,13 @@
 }
 
 /* Lookup field styling */
-.slds-text-link {
-    color: #0070d2;
-    text-decoration: none;
+ .slds-text-link {
+    text-decoration: underline;
 }
 
 .slds-text-link:hover {
-    color: #005fb2;
     text-decoration: underline;
-}
+} 
 
 /* Responsive table */
 .slds-scrollable_x {
