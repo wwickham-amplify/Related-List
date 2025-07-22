@@ -22,7 +22,7 @@
                       default=""/>
             
             <property name="recordLimit" type="Integer" label="Files to Show" 
-                      description="Number of files to display before showing 'View All'. Default is 8."
+                      description="Number of files to display before showing count. Default is 8."
                       default="8"/>
             
             <!-- =========================== -->
@@ -37,19 +37,8 @@
                       default="25"/>
             
             <property name="acceptedFileTypes" type="String" label="Accepted File Types" 
-                      description="Comma-separated file extensions (e.g. '.pdf,.doc,.jpg') or leave blank to accept all file types."
+                      description="Comma-separated file extensions (e.g. 'pdf,doc,jpg') or leave blank to accept all file types."
                       default=""/>
-            
-            <!-- =========================== -->
-            <!-- DISPLAY SETTINGS            -->
-            <!-- =========================== -->
-            <property name="showThumbnails" type="Boolean" label="Show Image Thumbnails" 
-                      description="Display thumbnail previews for image files. Enabled by default."
-                      default="false"/>
-            
-            <property name="cardSize" type="String" label="File Card Size" 
-                      description="Size of file cards: 'small', 'medium', or 'large'. Default is 'medium'."
-                      default="medium"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

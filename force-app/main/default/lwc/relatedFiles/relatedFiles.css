@@ -61,6 +61,134 @@ lightning-button {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* Modal styling from customCaseFeed.css */
+.slds-modal {
+    z-index: 9001;
+}
+
+.slds-backdrop {
+    z-index: 9000;
+}
+
+.modal-image-container {
+    text-align: center;
+    max-height: 70vh;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-image {
+    max-width: 100%;
+    max-height: 70vh;
+    width: auto;
+    height: auto;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+    object-fit: contain;
+}
+
+/* Modal header customization */
+.slds-modal__header {
+    position: relative;
+}
+
+.slds-modal__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1;
+}
+
+.slds-modal__title {
+    padding-right: 3rem; /* Make space for close button */
+}
+
+/* Modal footer */
+.slds-modal__footer_directional {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Large modal sizing */
+.slds-modal_large .slds-modal__container {
+    width: 90%;
+    max-width: 1200px;
+    min-height: 40vh;
+}
+
+/* Modal responsiveness */
+@media (max-width: 768px) {
+    .slds-modal_large .slds-modal__container {
+        width: 95%;
+        max-width: none;
+        margin: 1rem;
+    }
+    
+    .modal-image {
+        max-height: 50vh;
+    }
+    
+    .slds-modal__close {
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+}
+
+/* File attachment container with hover overlay */
+.file-attachment-container {
+    position: relative;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.file-attachment-container:hover .file-attachment-box {
+    background-color: #f3f3f3;
+}
+
+.file-attachment-box {
+    transition: background-color 0.1s ease;
+}
+
+/* File hover overlay */
+.file-hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    border-radius: 0.25rem;
+    z-index: 10;
+}
+
+.file-attachment-container:hover .file-hover-overlay {
+    opacity: 1;
+}
+
+.file-hover-overlay lightning-icon {
+    transform: scale(1.5);
+}
+
+/* Force white color for overlay icon */
+.file-hover-overlay lightning-icon svg {
+    fill: #ffffff !important;
+}
+
+.file-hover-overlay lightning-icon svg path {
+    fill: #ffffff !important;
+    stroke: #ffffff !important;
 }/* relatedFiles.css */
 
 /* Card styling to match SLDS standards */

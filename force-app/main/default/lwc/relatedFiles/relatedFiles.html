@@ -1,4 +1,4 @@
-<!-- relatedFiles-simple.html - Enhanced with Card View -->
+<!-- relatedFiles.html - Fixed Custom Properties -->
 <template>
     <div class="slds-card">
         <!-- Header -->
@@ -18,12 +18,13 @@
                         <span class="slds-text-heading_small">{listTitleWithCount}</span>
                     </h2>
                 </div>
-                <div class="slds-no-flex">
+                <div class="slds-no-flex" lwc:if={showAddFilesButton}>
                     <lightning-button
                         label="Add Files"
                         icon-name="utility:attach"
                         icon-position="left"
                         variant="brand-outline"
+                        onclick={handleAddFiles}
                         disabled={isLoading}>
                     </lightning-button>
                 </div>
@@ -33,14 +34,50 @@
         <!-- Body -->
         <div class="slds-card__body slds-card__body_inner">
             <!-- Loading -->
-            <template if:true={isLoading}>
+            <template lwc:if={isLoading}>
                 <div class="slds-align_absolute-center slds-p-vertical_large">
                     <lightning-spinner alternative-text="Loading files..." size="medium"></lightning-spinner>
                 </div>
             </template>
 
+            <!-- Uploading Files -->
+            <template lwc:if={isUploading}>
+                <div class="slds-align_absolute-center slds-p-vertical_large">
+                    <lightning-spinner alternative-text="Uploading files..." size="medium"></lightning-spinner>
+                    <div class="slds-text-body_small slds-text-color_weak slds-m-top_small">
+                        Uploading files...
+                    </div>
+                </div>
+            </template>
+
+            <!-- Upload Error -->
+            <template lwc:if={showUploadError}>
+                <div class="slds-align_absolute-center slds-p-vertical_large">
+                    <div class="slds-text-align_center">
+                        <div class="slds-p-bottom_medium">
+                            <lightning-icon 
+                                icon-name="utility:error" 
+                                size="large" 
+                                variant="error">
+                            </lightning-icon>
+                        </div>
+                        <div class="slds-text-heading_medium slds-p-bottom_small slds-text-color_error">
+                            Upload Error
+                        </div>
+                        <div class="slds-text-body_regular slds-text-color_error slds-p-bottom_medium" style="white-space: pre-line;">
+                            {uploadError}
+                        </div>
+                        <lightning-button
+                            label="Try Again"
+                            variant="neutral"
+                            onclick={handleAddFiles}>
+                        </lightning-button>
+                    </div>
+                </div>
+            </template>
+
             <!-- Error -->
-            <template if:true={hasError}>
+            <template lwc:if={hasError}>
                 <div class="slds-align_absolute-center slds-p-vertical_large">
                     <div class="slds-text-align_center">
                         <div class="slds-text-color_error">
@@ -51,7 +88,7 @@
             </template>
 
             <!-- No Files -->
-            <template if:true={hasNoFiles}>
+            <template lwc:if={hasNoFiles}>
                 <div class="slds-align_absolute-center slds-p-vertical_large">
                     <div class="slds-text-align_center">
                         <div class="slds-p-bottom_medium">
@@ -67,35 +104,127 @@
             </template>
 
             <!-- Files Grid -->
-            <template if:true={hasFiles}>
-                <div class="slds-m-top_small">
-                    <div class="attachment-container">
-                        <template for:each={files} for:item="file">
-                            <div key={file.id} class="attachment-item">
-                                <div class="slds-box slds-box_x-small slds-theme_shade">
-                                    <div class="slds-grid slds-grid_vertical-align-center">
-                                        <div class="slds-col slds-no-flex slds-m-right_x-small">
+            <template lwc:if={hasFiles}>
+                <template lwc:if={showUploadError}>
+                    <!-- Upload error takes precedence, don't show files -->
+                </template>
+                <template lwc:else>
+                    <div class="slds-m-top_small">
+                        <div class="attachment-container">
+                            <template for:each={displayedFiles} for:item="file">
+                                <div key={file.id} class="attachment-item">
+                                    <div class="file-attachment-container"
+                                         onclick={handleFileClick}
+                                         data-file-id={file.id}
+                                         title="Click to preview or download">
+                                        <div class="slds-box slds-box_x-small slds-theme_shade file-attachment-box">
+                                            <div class="slds-grid slds-grid_vertical-align-center">
+                                                <div class="slds-col slds-no-flex slds-m-right_x-small">
+                                                    <lightning-icon 
+                                                        icon-name={file.icon} 
+                                                        size="small"
+                                                        alternative-text="File">
+                                                    </lightning-icon>
+                                                </div>
+                                                <div class="slds-col slds-has-flexi-truncate">
+                                                    <div class="slds-text-body_regular slds-text-color_default slds-truncate" title={file.title}>
+                                                        {file.title}
+                                                    </div>
+                                                    <div class="slds-text-body_small slds-text-color_weak">
+                                                        Jul 22, 2025 • {file.formattedSize} • {file.fileExtension}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Hover overlay -->
+                                        <div class="file-hover-overlay">
                                             <lightning-icon 
-                                                icon-name={file.icon} 
+                                                icon-name="utility:preview" 
                                                 size="small"
-                                                alternative-text="File">
+                                                class="slds-text-color_inverse"
+                                                alternative-text="Preview file">
                                             </lightning-icon>
                                         </div>
-                                        <div class="slds-col slds-has-flexi-truncate">
-                                            <div class="slds-text-body_regular slds-text-color_default slds-truncate" title={file.title}>
-                                                {file.title}
-                                            </div>
-                                            <div class="slds-text-body_small slds-text-color_weak">
-                                                Jul 22, 2025 • {file.formattedSize} • {file.fileExtension}
-                                            </div>
-                                        </div>
                                     </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <!-- View All Button if there are more files -->
+                    <template lwc:if={hasMoreFiles}>
+                        <div class="slds-text-align_center slds-m-top_medium">
+                            <lightning-button
+                                label={viewAllButtonLabel}
+                                variant="neutral"
+                                onclick={handleViewAll}>
+                            </lightning-button>
+                        </div>
+                    </template>
+                </template>
+            </template>
+        </div>
+    </div>
+
+    <!-- Image/File Preview Modal -->
+    <template lwc:if={showImageModal}>
+        <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-heading" 
+                 class="slds-modal slds-fade-in-open slds-modal_large">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" 
+                            title="Close" onclick={handleCloseModal}>
+                        <lightning-icon icon-name="utility:close" alternative-text="Close" size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading" class="slds-modal__title slds-hyphenate">
+                        <strong>{modalImageName}</strong>
+                    </h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <div class="modal-image-container">
+                        <!-- Show image for image files -->
+                        <template lwc:if={modalIsImage}>
+                            <img src={modalImageUrl} 
+                                 alt={modalImageName}
+                                 class="modal-image" />
+                        </template>
+                        
+                        <!-- Show file icon for non-image files -->
+                        <template lwc:else>
+                            <div class="slds-text-align_center">
+                                <div class="slds-p-bottom_medium">
+                                    <lightning-icon 
+                                        icon-name={modalFileIcon} 
+                                        size="large"
+                                        alternative-text="File">
+                                    </lightning-icon>
+                                </div>
+                                <div class="slds-text-body_regular slds-text-color_weak">
+                                    No preview available. Click Download to view.
                                 </div>
                             </div>
                         </template>
                     </div>
+                    <template lwc:if={modalImageSize}>
+                        <div class="slds-text-body_small slds-text-color_weak slds-text-align_center slds-m-top_small">
+                            {modalImageSize}
+                        </div>
+                    </template>
                 </div>
-            </template>
-        </div>
-    </div>
+                <footer class="slds-modal__footer">
+                    <div class="slds-modal__footer_directional">
+                        <lightning-button 
+                            variant="brand"
+                            label="Download"
+                            icon-name="utility:download"
+                            onclick={handleDownloadFromModal}
+                            class="slds-float_right">
+                        </lightning-button>
+                    </div>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open" onclick={handleModalBackdropClick}></div>
+    </template>
 </template>
