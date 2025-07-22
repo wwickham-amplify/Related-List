@@ -1,0 +1,273 @@
+<!-- relatedList.html -->
+<template>
+    <div class="slds-card">
+        <!-- Header with Title, Count, and Action Button -->
+        <div class="slds-card__header slds-grid">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <!-- Icon and Title -->
+                <div class="slds-media__figure">
+                    <span class="slds-icon_container" lwc:if={listIcon}>
+                        <lightning-icon 
+                            icon-name={listIcon} 
+                            size="small" 
+                            alternative-text={selectedObject}>
+                        </lightning-icon>
+                    </span>
+                </div>
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                        <span class="slds-text-heading_small">{listTitle}</span>
+                    </h2>
+                </div>
+                
+                <!-- Action Button (for Files only) -->
+                <div class="slds-no-flex" lwc:if={showActionButton}>
+                    <lightning-button
+                        label={actionButtonLabel}
+                        icon-name={actionButtonIcon}
+                        icon-position="left"
+                        variant="brand-outline"
+                        onclick={handleActionClick}
+                        disabled={isLoading}>
+                    </lightning-button>
+                </div>
+            </header>
+        </div>
+
+        <!-- Card Body -->
+        <div class="slds-card__body slds-card__body_inner">
+            <!-- Loading Spinner -->
+            <template lwc:if={isLoading}>
+                <div class="slds-align_absolute-center slds-p-vertical_large">
+                    <lightning-spinner 
+                        alternative-text="Loading records..." 
+                        size="medium">
+                    </lightning-spinner>
+                </div>
+            </template>
+
+            <!-- Error State -->
+            <template lwc:if={hasError}>
+                <div class="slds-align_absolute-center slds-p-vertical_large">
+                    <div class="slds-text-align_center">
+                        <div class="slds-p-bottom_medium">
+                            <lightning-icon 
+                                icon-name="utility:error" 
+                                size="large" 
+                                variant="error">
+                            </lightning-icon>
+                        </div>
+                        <div class="slds-text-heading_medium slds-p-bottom_small">
+                            Error Loading {selectedObject}
+                        </div>
+                        <div class="slds-text-body_regular slds-text-color_weak slds-p-bottom_medium">
+                            {errorMessage}
+                        </div>
+                        <lightning-button
+                            label="Go to Error Page"
+                            variant="neutral"
+                            onclick={handleErrorNavigation}>
+                        </lightning-button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- No Records State -->
+            <template lwc:if={hasNoRecords}>
+                <div class="slds-align_absolute-center slds-p-vertical_large">
+                    <div class="slds-text-align_center">
+                        <div class="slds-p-bottom_medium">
+                            <lightning-icon 
+                                icon-name={listIcon} 
+                                size="large" 
+                                class="slds-icon-text-light">
+                            </lightning-icon>
+                        </div>
+                        <div class="slds-text-heading_medium slds-p-bottom_small">
+                            No {selectedObject} Found
+                        </div>
+                        <div class="slds-text-body_regular slds-text-color_weak">
+                            {emptyStateMessage}
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Records Content -->
+            <template lwc:if={hasRecords}>
+                <!-- Card View (Files) -->
+                <template lwc:if={showCardView}>
+                    <div class="slds-grid slds-wrap slds-gutters_small">
+                        <template for:each={displayedRecords} for:item="record">
+                            <div key={record.id} class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-3">
+                                <!-- File Card - will be implemented in Phase 2 -->
+                                <div class="slds-box slds-box_x-small slds-theme_shade slds-m-bottom_x-small">
+                                    <div class="slds-grid slds-grid_vertical-align-center">
+                                        <div class="slds-col slds-no-flex slds-m-right_small">
+                                            <lightning-icon 
+                                                icon-name="doctype:attachment" 
+                                                size="small"
+                                                alternative-text="File">
+                                            </lightning-icon>
+                                        </div>
+                                        <div class="slds-col slds-has-flexi-truncate">
+                                            <div class="slds-text-body_regular slds-truncate" title={record.displayName}>
+                                                {record.displayName}
+                                            </div>
+                                            <div class="slds-text-body_small slds-text-color_weak slds-truncate">
+                                                File • Preview coming in Phase 2
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-no-flex">
+                                            <lightning-button-icon
+                                                icon-name="utility:preview"
+                                                alternative-text="Preview"
+                                                title="Preview"
+                                                variant="bare"
+                                                size="small"
+                                                onclick={handleRowAction}
+                                                data-record-id={record.id}
+                                                data-action="preview">
+                                            </lightning-button-icon>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- List View (All other objects) -->
+                <template lwc:if={showListView}>
+                    <div class="related-list-table">
+                        <!-- Table Header -->
+                        <div class="slds-scrollable_x">
+                            <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+                                <thead>
+                                    <tr class="slds-line-height_reset">
+                                        <template for:each={tableColumns} for:item="column">
+                                            <th key={column.apiName} class="slds-text-title_caps" scope="col">
+                                                <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                                    <template lwc:if={column.sortable}>
+                                                        <button 
+                                                            class="slds-button slds-button_reset slds-text-title_caps"
+                                                            onclick={handleSort}
+                                                            data-field-name={column.apiName}
+                                                            title={column.label}>
+                                                            <div class="slds-grid slds-grid_vertical-align-center">
+                                                                <span class="slds-assistive-text">Sort by: </span>
+                                                                <span class="slds-truncate" title={column.label}>{column.label}</span>
+                                                                <template lwc:if={column.sortedDirection}>
+                                                                    <template lwc:if={column.sortedDirectionAsc}>
+                                                                        <lightning-icon 
+                                                                            icon-name="utility:arrowup"
+                                                                            size="xx-small"
+                                                                            class="slds-m-left_xx-small">
+                                                                        </lightning-icon>
+                                                                    </template>
+                                                                    <template lwc:else>
+                                                                        <lightning-icon 
+                                                                            icon-name="utility:arrowdown"
+                                                                            size="xx-small"
+                                                                            class="slds-m-left_xx-small">
+                                                                        </lightning-icon>
+                                                                    </template>
+                                                                </template>
+                                                            </div>
+                                                        </button>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <span class="slds-truncate" title={column.label}>{column.label}</span>
+                                                    </template>
+                                                    
+                                                    <!-- Column Menu Button -->
+                                                    <div class="slds-col slds-no-flex slds-m-left_xx-small">
+                                                        <div class="slds-dropdown-trigger slds-dropdown-trigger_click">
+                                                            <lightning-button-icon
+                                                                icon-name="utility:down"
+                                                                size="xx-small"
+                                                                variant="border-filled"
+                                                                alternative-text="Column Options"
+                                                                title="Column Options"
+                                                                onclick={handleColumnMenu}
+                                                                data-field-name={column.apiName}>
+                                                            </lightning-button-icon>
+                                                            
+                                                            <!-- Column Options Menu -->
+                                                            <div class="slds-dropdown slds-dropdown_right slds-dropdown_small" data-field-name={column.apiName}>
+                                                                <ul class="slds-dropdown__list" role="menu">
+                                                                    <li class="slds-dropdown__item" role="presentation">
+                                                                        <button class="slds-dropdown__link" role="menuitem" onclick={handleTextDisplay} data-value="wrap">
+                                                                            <span class="slds-truncate" title="Wrap text">
+                                                                                <lightning-icon icon-name="utility:text" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                                                                                Wrap text
+                                                                            </span>
+                                                                        </button>
+                                                                    </li>
+                                                                    <li class="slds-dropdown__item" role="presentation">
+                                                                        <button class="slds-dropdown__link" role="menuitem" onclick={handleTextDisplay} data-value="clip">
+                                                                            <span class="slds-truncate" title="Clip text">
+                                                                                <lightning-icon icon-name="utility:cut" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                                                                                Clip text
+                                                                            </span>
+                                                                        </button>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                        </template>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={tableData} for:item="row">
+                                        <tr key={row.id} class="slds-hint-parent">
+                                            <template for:each={row.cells} for:item="cell">
+                                                <td key={cell.fieldName} role="gridcell">
+                                                    <div class={textDisplayClass}>
+                                                        <template lwc:if={cell.isLookup}>
+                                                            <!-- Lookup field with navigation -->
+                                                            <button 
+                                                                class="slds-button slds-button_reset slds-text-link"
+                                                                onclick={handleRowAction}
+                                                                data-record-id={row.id}
+                                                                data-field-name={cell.fieldName}
+                                                                data-action="navigate"
+                                                                title={cell.value}>
+                                                                {cell.value}
+                                                            </button>
+                                                        </template>
+                                                        <template lwc:else>
+                                                            <!-- Regular field -->
+                                                            <span title={cell.value}>
+                                                                {cell.value}
+                                                            </span>
+                                                        </template>
+                                                    </div>
+                                                </td>
+                                            </template>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- View All Button -->
+                <template lwc:if={hasMoreRecords}>
+                    <div class="slds-text-align_center slds-m-top_medium">
+                        <lightning-button
+                            label="View All"
+                            variant="neutral"
+                            onclick={handleViewAll}
+                            disabled={isLoading}>
+                        </lightning-button>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </div>
+</template>

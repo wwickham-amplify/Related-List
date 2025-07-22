@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>64.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Custom Related List</masterLabel>
+    <description>A configurable related list component that supports Files, Internal Asset Requests, and Knowledge Articles</description>
+    <targets>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <!-- =========================== -->
+            <!-- COMPONENT CONFIGURATION     -->
+            <!-- =========================== -->
+            <property name="recordId" type="String" label="Record ID" 
+                      description="The parent record ID. Use {!recordId} to dynamically use the current record ID."
+                      default="{!recordId}"/>
+                      
+            <!-- =========================== -->
+            <!-- RELATED LIST SETTINGS       -->
+            <!-- =========================== -->
+            <property name="selectedObject" type="String" label="Object API Name" 
+                      description="Enter the API name of the object to display. Examples: 'Files' (for file attachments), 'Account', 'Case', 'Internal_Asset_Request__c', 'Knowledge__kav'"
+                      default="Files"/>
+                      
+            <property name="recordLimit" type="Integer" label="Record Limit" 
+                      description="Maximum number of records to display before showing 'View All'"
+                      default="6"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>
