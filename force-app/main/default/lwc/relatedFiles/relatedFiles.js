@@ -10,6 +10,10 @@ export default class RelatedFiles extends LightningElement {
     @api disableFileUpload = false;
     @api maxFileSize = 25;
     @api acceptedFileTypes = '';
+    @api titleTextStyle = 'Heading 3';
+    @api addFilesButtonStyle = 'Secondary';
+    @api viewAllButtonStyle = 'Secondary';
+    @api closeButtonStyle = 'Secondary';
     
     @track files = [];
     @track isLoading = false;
@@ -26,9 +30,7 @@ export default class RelatedFiles extends LightningElement {
     @track modalFileIcon = 'doctype:unknown';
 
     // File upload properties
-    @track showFileUpload = false;
     @track isUploading = false;
-    @track selectedFiles = [];
     @track uploadError = '';
     @track showUploadError = false;
 
@@ -49,6 +51,50 @@ export default class RelatedFiles extends LightningElement {
 
     get listTitleWithCount() {
         return `${this.computedListTitle} (${this.files.length})`;
+    }
+
+    get titleClasses() {
+        // Map LWR font settings to proper CSS classes (same as Case Feed Publisher)
+        const lwrFontMap = {
+            'Heading 1': 'slds-text-heading_large',      // H1 equivalent
+            'Heading 2': 'slds-text-heading_medium',     // H2 equivalent  
+            'Heading 3': 'slds-text-heading_small',      // H3 equivalent
+            'Heading 4': 'slds-text-title_caps',         // H4 equivalent
+            'Heading 5': 'slds-text-title_bold',         // H5 equivalent
+            'Heading 6': 'slds-text-title',              // H6 equivalent
+            'Paragraph 1': 'slds-text-body_regular',     // Large paragraph
+            'Paragraph 2': 'slds-text-body_small'        // Small paragraph
+        };
+        
+        return lwrFontMap[this.titleTextStyle] || lwrFontMap['Heading 3'];
+    }
+
+    get addFilesButtonVariant() {
+        // Map LWR button styles to Lightning button variants (same as Case Feed Publisher)
+        const styleMap = {
+            'Primary': 'brand',
+            'Secondary': 'brand-outline',
+            'Tertiary': 'bare'
+        };
+        return styleMap[this.addFilesButtonStyle] || 'brand-outline';
+    }
+
+    get viewAllButtonVariant() {
+        const styleMap = {
+            'Primary': 'brand',
+            'Secondary': 'brand-outline', 
+            'Tertiary': 'base'
+        };
+        return styleMap[this.viewAllButtonStyle] || 'brand-outline';
+    }
+
+    get closeButtonVariant() {
+        const styleMap = {
+            'Primary': 'brand',
+            'Secondary': 'brand-outline', 
+            'Tertiary': 'base'
+        };
+        return styleMap[this.closeButtonStyle] || 'brand-outline';
     }
 
     get computedRecordLimit() {
@@ -315,6 +361,13 @@ export default class RelatedFiles extends LightningElement {
             reader.onerror = () => reject(new Error('Failed to read file'));
             reader.readAsDataURL(file);
         });
+    }
+
+    // Handle Close button click (dismiss error)
+    handleCloseError() {
+        console.log('Close error button clicked');
+        this.showUploadError = false;
+        this.uploadError = '';
     }
 
     // Handle View All button click

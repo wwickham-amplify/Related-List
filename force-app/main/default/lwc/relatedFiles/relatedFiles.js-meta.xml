@@ -39,6 +39,29 @@
             <property name="acceptedFileTypes" type="String" label="Accepted File Types" 
                       description="Comma-separated file extensions (e.g. 'pdf,doc,jpg') or leave blank to accept all file types."
                       default=""/>
+            
+            <!-- =========================== -->
+            <!-- STYLING SETTINGS            -->
+            <!-- =========================== -->
+            <property name="titleTextStyle" type="String" label="Title Text Style" 
+                      description="Typography style for the list title"
+                      datasource="Heading 1,Heading 2,Heading 3,Heading 4,Heading 5,Heading 6,Paragraph 1,Paragraph 2"
+                      default="Heading 3"/>
+            
+            <property name="addFilesButtonStyle" type="String" label="Add Files Button Style" 
+                      description="Visual style for the Add Files button"
+                      datasource="Primary,Secondary,Tertiary"
+                      default="Secondary"/>
+            
+            <property name="viewAllButtonStyle" type="String" label="View All Button Style" 
+                      description="Visual style for the View All button"
+                      datasource="Primary,Secondary,Tertiary"
+                      default="Secondary"/>
+            
+            <property name="closeButtonStyle" type="String" label="Close Button Style" 
+                      description="Visual style for the Close button (error state)"
+                      datasource="Primary,Secondary,Tertiary"
+                      default="Secondary"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

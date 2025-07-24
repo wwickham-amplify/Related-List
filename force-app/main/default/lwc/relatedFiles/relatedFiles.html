@@ -15,7 +15,7 @@
                 </div>
                 <div class="slds-media__body">
                     <h2 class="slds-card__header-title">
-                        <span class="slds-text-heading_small">{listTitleWithCount}</span>
+                        <span class={titleClasses}>{listTitleWithCount}</span>
                     </h2>
                 </div>
                 <div class="slds-no-flex" lwc:if={showAddFilesButton}>
@@ -23,7 +23,7 @@
                         label="Add Files"
                         icon-name="utility:attach"
                         icon-position="left"
-                        variant="brand-outline"
+                        variant={addFilesButtonVariant}
                         onclick={handleAddFiles}
                         disabled={isLoading}>
                     </lightning-button>
@@ -68,9 +68,9 @@
                             {uploadError}
                         </div>
                         <lightning-button
-                            label="Try Again"
-                            variant="neutral"
-                            onclick={handleAddFiles}>
+                            label="Close"
+                            variant={closeButtonVariant}
+                            onclick={handleCloseError}>
                         </lightning-button>
                     </div>
                 </div>
@@ -110,7 +110,7 @@
                 </template>
                 <template lwc:else>
                     <div class="slds-m-top_small">
-                        <div class="attachment-container">
+                        <div class="attachment-container-improved">
                             <template for:each={displayedFiles} for:item="file">
                                 <div key={file.id} class="attachment-item">
                                     <div class="file-attachment-container"
@@ -156,7 +156,7 @@
                         <div class="slds-text-align_center slds-m-top_medium">
                             <lightning-button
                                 label={viewAllButtonLabel}
-                                variant="neutral"
+                                variant={viewAllButtonVariant}
                                 onclick={handleViewAll}>
                             </lightning-button>
                         </div>
