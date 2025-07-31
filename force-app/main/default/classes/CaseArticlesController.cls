@@ -11,17 +11,13 @@ public with sharing class CaseArticlesController {
         @AuraEnabled public String id { get; set; }
         @AuraEnabled public String title { get; set; }
         @AuraEnabled public String urlName { get; set; }
-        @AuraEnabled public String summary { get; set; }
-        @AuraEnabled public String lastModifiedDate { get; set; }
         
         public ArticleData() {}
         
-        public ArticleData(String id, String title, String urlName, String summary, Datetime lastModified) {
+        public ArticleData(String id, String title, String urlName) {
             this.id = id;
             this.title = title;
             this.urlName = urlName;
-            this.summary = summary;
-            this.lastModifiedDate = lastModified != null ? lastModified.format('MMM dd, yyyy') : '';
         }
     }
     
@@ -75,7 +71,7 @@ public with sharing class CaseArticlesController {
             // Query Knowledge articles with required fields
             // Note: Only published articles that the user has access to will be returned
             List<Knowledge__kav> knowledgeArticles = [
-                SELECT Id, Title, UrlName, Summary, LastModifiedDate,
+                SELECT Id, Title, UrlName, 
                        PublishStatus, VersionNumber
                 FROM Knowledge__kav 
                 WHERE Id IN :knowledgeArticleVersionIds
@@ -90,9 +86,7 @@ public with sharing class CaseArticlesController {
                 ArticleData articleData = new ArticleData(
                     article.Id,
                     article.Title,
-                    article.UrlName,
-                    article.Summary,
-                    article.LastModifiedDate
+                    article.UrlName
                 );
                 articles.add(articleData);
                 

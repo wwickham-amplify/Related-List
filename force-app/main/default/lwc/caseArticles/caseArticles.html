@@ -1,3 +1,110 @@
 <template>
-    
+    <lightning-card>
+        <!-- Header with configurable icon and typography -->
+        <div slot="title" class="slds-media slds-media_center">
+            <div class="slds-media__figure" lwc:if={iconName}>
+                <lightning-icon 
+                    icon-name={iconName} 
+                    size="medium"
+                    alternative-text={componentTitle}
+                    class="slds-m-right_small">
+                </lightning-icon>
+            </div>
+            <div class="slds-media__body">
+                <span class={titleClass}>{listTitle}</span>
+            </div>
+        </div>
+
+        <!-- Card Body using native lightning-card patterns -->
+        <div class="slds-p-around_medium">
+            <!-- Loading State using SLDS illustrations -->
+            <template lwc:if={isLoading}>
+                <lightning-layout horizontal-align="center" class="slds-p-vertical_large">
+                    <lightning-layout-item>
+                        <lightning-spinner 
+                            alternative-text="Loading articles..." 
+                            size="medium">
+                        </lightning-spinner>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </template>
+
+            <!-- Error State using SLDS illustrations -->
+            <template lwc:if={hasError}>
+                <lightning-layout horizontal-align="center" class="slds-p-vertical_large">
+                    <lightning-layout-item>
+                        <div class="slds-text-align_center">
+                            <lightning-icon 
+                                icon-name="utility:error" 
+                                size="large" 
+                                variant="error"
+                                class="slds-m-bottom_medium">
+                            </lightning-icon>
+                            <h3 class="slds-text-heading_medium slds-m-bottom_small">
+                                Error Loading Articles
+                            </h3>
+                            <p class="slds-text-body_regular slds-text-color_weak slds-m-bottom_medium">
+                                {errorMessage}
+                            </p>
+                            <lightning-button
+                                label="Retry"
+                                variant="neutral"
+                                onclick={refresh}>
+                            </lightning-button>
+                        </div>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </template>
+
+            <!-- Empty State using SLDS illustrations -->
+            <template lwc:if={hasNoArticles}>
+                <lightning-layout horizontal-align="center" class="slds-p-vertical_large">
+                    <lightning-layout-item>
+                        <div class="slds-text-align_center">
+                            <lightning-icon 
+                                icon-name={iconName} 
+                                size="large" 
+                                variant="inverse"
+                                class="slds-m-bottom_medium slds-icon-text-light">
+                            </lightning-icon>
+                            <h3 class="slds-text-heading_medium slds-m-bottom_small">
+                                No Articles Found
+                            </h3>
+                        </div>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </template>
+
+            <!-- Articles List - Simple unformatted list -->
+            <template lwc:if={hasArticles}>
+                <ul class="slds-list_vertical slds-has-dividers_top-space">
+                    <template for:each={displayedArticles} for:item="article">
+                        <li key={article.id} class="slds-list__item slds-p-vertical_small">
+                            <a href="#" 
+                               class="article-link"
+                               data-article-id={article.id}
+                               data-url-name={article.urlName}
+                               onclick={handleArticleClick}
+                               title={article.title}>
+                                {article.title}
+                            </a>
+                        </li>
+                    </template>
+                </ul>
+
+                <!-- Load More Button -->
+                <template lwc:if={hasMoreToLoad}>
+                    <lightning-layout horizontal-align="center" class="slds-m-top_medium">
+                        <lightning-layout-item>
+                            <lightning-button
+                                label={loadMoreButtonLabel}
+                                variant="neutral"
+                                onclick={handleLoadMore}>
+                            </lightning-button>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
 </template>
