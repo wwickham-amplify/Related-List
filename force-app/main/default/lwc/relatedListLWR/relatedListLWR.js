@@ -1,138 +1,139 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import getObjectConfiguration from '@salesforce/apex/RelatedListController.getObjectConfiguration';
-import getRelatedRecords from '@salesforce/apex/RelatedListController.getRelatedRecords';
-import getIconName from '@salesforce/apex/RelatedListController.getIconName';
+import { NavigationMixin } from 'lightning/navigation';
+import { getRelatedListInfo, getRelatedListRecords } from 'lightning/uiRelatedListApi';
+import { getRecord } from 'lightning/uiRecordApi';
 
-export default class RelatedListLWR extends LightningElement {
-    // Public properties with smart defaults
-    @api recordId; // The parent record ID
-    @api selectedObject = 'Case'; // The object API name to display
-    @api relatedListLabel = ''; // The display label for the list (auto-generated if blank)
-    @api fieldSetName = ''; // The field set API name to use for columns (smart defaults if blank)
-    @api recordLimit = 0; // Number of records to show (smart defaults if 0)
+export default class RelatedListLWR extends NavigationMixin(LightningElement) {
+    @api recordId; // Parent record ID
+    @api relatedListId = 'Tasks'; // Related list API name
+    @api relatedListLabel = ''; // Optional custom label
+    @api recordLimit = 6; // Number of records to display
     
-    // Private reactive properties
-    @track records = [];
-    @track isLoading = false;
-    @track errorMessage = '';
-    @track hasError = false;
-    @track objectConfig = null;
-    @track sortField = '';
-    @track sortDirection = 'ASC';
-    @track wrapText = false;
-    @track actualIconName = 'standard:record'; // Will be populated by loadIconName
+    // State management
+    @track sortedBy = null;
+    @track sortedDirection = 'asc';
 
-    // Lifecycle hooks
-    connectedCallback() {
-        console.log('=== RelatedList Connected ===');
-        console.log('Record ID:', this.recordId);
-        console.log('Selected Object:', this.selectedObject);
-        console.log('=== Smart Defaults Applied ===');
-        console.log('Related List Label:', `"${this.relatedListLabel}" → "${this.computedRelatedListLabel}"`);
-        console.log('Field Set Name:', `"${this.fieldSetName}" → "${this.computedFieldSetName}"`);
-        console.log('Record Limit:', `${this.recordLimit} → ${this.computedRecordLimit}`);
-        
-        // Validate configuration
-        const configErrors = this.validateConfiguration();
-        if (configErrors) {
-            console.warn('Configuration Issues:', configErrors);
-        } else {
-            console.log('Configuration validated successfully');
-        }
-        
-        this.loadIconName();
-        this.loadConfiguration();
-    }
+    // Wire the parent record to get object type automatically
+    @wire(getRecord, { recordId: '$recordId', fields: ['Id'] })
+    parentRecord;
 
-    // Load icon name directly (not cached)
-    async loadIconName() {
-        try {
-            console.log('Loading icon name for:', this.selectedObject);
-            const iconName = await getIconName({ sObjectName: this.selectedObject });
-            this.actualIconName = iconName;
-            console.log('Icon loaded for ' + this.selectedObject + ': ' + iconName);
-        } catch (error) {
-            console.error('Error loading icon:', error);
-            this.actualIconName = this.selectedObject.endsWith('__c') ? 'standard:custom' : 'standard:record';
-        }
+    // Wire related list metadata
+    @wire(getRelatedListInfo, {
+        parentObjectApiName: '$parentObjectApiName',
+        relatedListId: '$relatedListId'
+    })
+    relatedListInfo;
+
+    // Wire related list records
+    @wire(getRelatedListRecords, {
+        parentRecordId: '$recordId',
+        relatedListId: '$relatedListId',
+        fields: '$fieldNames',
+        sortBy: '$sortBy',
+        pageSize: '$pageSize'
+    })
+    relatedListRecords;
+
+    // Computed properties for wire parameters
+    get parentObjectApiName() {
+        // Add error handling and debugging
+        const apiName = this.parentRecord?.data?.apiName;
+        console.log('Parent Object API Name:', apiName);
+        return apiName;
     }
 
-    // Computed properties with smart defaults
-    get computedRelatedListLabel() {
-        if (this.relatedListLabel) {
-            return this.relatedListLabel;
+    get fieldNames() {
+        // Get field names from columns, fallback to basic fields
+        console.log('Related List Info:', this.relatedListInfo);
+        if (this.relatedListInfo?.data?.displayColumns?.length > 0) {
+            const fields = this.relatedListInfo.data.displayColumns.map(col => col.fieldApiName);
+            console.log('Field Names from LDS:', fields);
+            return fields;
         }
-        
-        // Auto-generate labels based on object type
-        const labelMap = {
-            'Knowledge__kav': 'Knowledge Articles',
-            'Internal_Asset_Request__c': 'Internal Asset Requests',
-            'Case': 'Related Cases',
-            'Account': 'Related Accounts',
-            'Contact': 'Related Contacts',
-            'Opportunity': 'Related Opportunities'
-        };
-        
-        return labelMap[this.selectedObject] || 'Related Records';
-    }
-    
-    get computedFieldSetName() {
-        if (this.fieldSetName) {
-            return this.fieldSetName;
-        }
-        
-        // Smart defaults based on object type
-        const fieldSetMap = {
-            'Knowledge__kav': 'KnowledgeRelatedList',
-            'Internal_Asset_Request__c': 'AssetRequestRelatedList',
-            'Case': 'CaseRelatedList',
-            'Account': 'AccountRelatedList',
-            'Contact': 'ContactRelatedList',
-            'Opportunity': 'OpportunityRelatedList'
-        };
-        
-        return fieldSetMap[this.selectedObject] || 'RelatedList';
-    }
-    
-    get computedRecordLimit() {
-        if (this.recordLimit > 0) {
-            return this.recordLimit;
-        }
-        
-        // Smart defaults: Default 6 records for most objects
-        return 6;
+        console.log('No fields from LDS, using empty array');
+        return []; // LDS will use default fields
     }
 
-    // Computed properties
+    get sortBy() {
+        if (this.sortedBy) {
+            return [{
+                fieldApiName: this.sortedBy,
+                sortDirection: this.sortedDirection.toUpperCase()
+            }];
+        }
+        return [];
+    }
+
+    get pageSize() {
+        return this.recordLimit + 10; // Get extra records to show "View All"
+    }
+
+    // Computed properties for display
+    get isLoading() {
+        return this.parentRecord?.loading || 
+               this.relatedListInfo?.loading || 
+               this.relatedListRecords?.loading;
+    }
+
+    get hasError() {
+        const hasWireError = this.parentRecord?.error || 
+                            this.relatedListInfo?.error || 
+                            this.relatedListRecords?.error;
+        
+        // Log errors for debugging
+        if (hasWireError) {
+            console.error('LDS Wire Error:', {
+                parentRecord: this.parentRecord?.error,
+                relatedListInfo: this.relatedListInfo?.error,
+                relatedListRecords: this.relatedListRecords?.error
+            });
+        }
+        
+        return hasWireError;
+    }
+
+    get errorMessage() {
+        const error = this.parentRecord?.error || 
+                     this.relatedListInfo?.error || 
+                     this.relatedListRecords?.error;
+        return error?.body?.message || error?.message || 'An unexpected error occurred';
+    }
+
+    get relatedListMetadata() {
+        return this.relatedListInfo?.data;
+    }
+
+    get headerActions() {
+        return this.relatedListMetadata?.actions || [];
+    }
+
+    get columns() {
+        const cols = this.relatedListMetadata?.displayColumns || [];
+        return cols.map(col => ({
+            ...col,
+            sortedBy: col.fieldApiName,
+            sortedDirection: this.sortedBy === col.fieldApiName ? this.sortedDirection : null,
+            sortedDirectionAsc: this.sortedBy === col.fieldApiName && this.sortedDirection === 'asc'
+        }));
+    }
+
+    get recordActions() {
+        return this.relatedListMetadata?.recordActions || [];
+    }
+
+    get records() {
+        return this.relatedListRecords?.data?.records || [];
+    }
+
     get listTitle() {
+        const label = this.relatedListLabel || this.relatedListMetadata?.label || this.relatedListId;
         const count = this.records.length;
-        return `${this.computedRelatedListLabel} (${count})`;
+        return `${label} (${count})`;
     }
 
     get listIcon() {
-        return this.actualIconName || this.objectConfig?.icon || 'standard:record';
-    }
-
-    get emptyStateMessage() {
-        return `No ${this.computedRelatedListLabel.toLowerCase()} found.`;
-    }
-
-    get showActionButton() {
-        // Hide action button for generic related lists - will be enhanced in future phases
-        return false;
-    }
-
-    get actionButtonLabel() {
-        return 'Add Record';
-    }
-
-    get actionButtonIcon() {
-        return 'utility:add';
-    }
-
-    get displayedRecords() {
-        return this.records.slice(0, this.computedRecordLimit);
+        return this.relatedListMetadata?.icon || 'standard:record';
     }
 
     get hasRecords() {
@@ -143,220 +144,204 @@ export default class RelatedListLWR extends LightningElement {
         return !this.isLoading && !this.hasError && this.records.length === 0;
     }
 
+    get displayedRecords() {
+        return this.records.slice(0, this.recordLimit);
+    }
+
     get hasMoreRecords() {
-        return this.records.length > this.computedRecordLimit;
+        return this.records.length > this.recordLimit;
     }
 
-    get showCardView() {
-        // Generic related lists use table view by default
-        return false;
+    get emptyStateMessage() {
+        const label = this.relatedListLabel || this.relatedListMetadata?.label || 'records';
+        return `No ${label.toLowerCase()} found.`;
     }
 
-    get showListView() {
-        return !this.showCardView && this.objectConfig?.columns?.length > 0;
+    get showHeaderActions() {
+        return this.headerActions && this.headerActions.length > 0;
     }
 
-    get tableColumns() {
-        if (!this.objectConfig?.columns) return [];
-        
-        return this.objectConfig.columns.map(col => ({
-            ...col,
-            sortedBy: col.apiName,
-            sortedDirection: this.sortField === col.apiName ? this.sortDirection : null,
-            sortedDirectionAsc: this.sortField === col.apiName && this.sortDirection === 'ASC'
-        }));
+    get primaryAction() {
+        return this.headerActions.length > 0 ? this.headerActions[0] : null;
     }
 
+    get secondaryActions() {
+        return this.headerActions.length > 1 ? this.headerActions.slice(1) : [];
+    }
+
+    get showMultipleActions() {
+        return this.headerActions.length > 1;
+    }
+
+    // Table data for display
     get tableData() {
         return this.displayedRecords.map(record => {
-            const rowData = { 
+            const row = {
                 id: record.id,
                 cells: []
             };
-            
-            if (this.objectConfig?.columns) {
-                this.objectConfig.columns.forEach(col => {
-                    let value = record.fields[col.apiName];
-                    let displayValue = '';
-                    
-                    // Format different field types
-                    if (value !== null && value !== undefined) {
-                        if (col.type === 'DATETIME' || col.type === 'DATE') {
-                            displayValue = new Date(value).toLocaleDateString();
-                        } else if (col.isLookup && typeof value === 'object') {
-                            // Handle lookup field display
-                            displayValue = value.Name || value.Id;
-                        } else {
-                            displayValue = String(value);
-                        }
-                    }
-                    
-                    rowData.cells.push({
-                        fieldName: col.apiName,
-                        value: displayValue,
-                        isLookup: col.isLookup,
-                        label: col.label
-                    });
+
+            this.columns.forEach(column => {
+                const fieldValue = this.getFieldValue(record, column.fieldApiName);
+                row.cells.push({
+                    fieldName: column.fieldApiName,
+                    value: fieldValue,
+                    label: column.label,
+                    isLookup: column.dataType === 'Reference'
                 });
-            }
-            
-            return rowData;
+            });
+
+            return row;
         });
     }
 
-    get textDisplayClass() {
-        return this.wrapText ? 'slds-truncate' : 'slds-line-clamp_x-small';
-    }
-
-    // Methods
-    async loadConfiguration() {
-        if (!this.recordId) {
-            console.warn('No recordId provided');
-            return;
-        }
-
-        console.log('=== Loading Configuration ===');
-        this.isLoading = true;
-        this.hasError = false;
-
+    // Helper to get field value from record
+    getFieldValue(record, fieldApiName) {
         try {
-            const config = await getObjectConfiguration({
-                objectApiName: this.selectedObject,
-                parentRecordId: this.recordId,
-                fieldSetName: this.computedFieldSetName
-            });
-
-            console.log('Object configuration:', config);
-            this.objectConfig = config;
-
-            // Set default sort field
-            if (config.columns && config.columns.length > 0) {
-                this.sortField = config.columns[0].apiName;
+            // Handle nested field references (e.g., Account.Name)
+            const fieldParts = fieldApiName.split('.');
+            let value = record.fields;
+            
+            for (const part of fieldParts) {
+                if (value && value[part]) {
+                    value = value[part].value !== undefined ? value[part].value : value[part];
+                } else {
+                    return '';
+                }
             }
-
-            await this.loadRecords();
-
+            
+            return value || '';
         } catch (error) {
-            console.error('Error loading configuration:', error);
-            this.handleError(error);
-        } finally {
-            this.isLoading = false;
-        }
-    }
-
-    async loadRecords() {
-        if (!this.objectConfig) {
-            console.warn('No object configuration available');
-            return;
-        }
-
-        console.log('=== Loading Records ===');
-        this.isLoading = true;
-
-        try {
-            const fieldNames = this.objectConfig.columns?.map(col => col.apiName) || ['Name'];
-
-            const records = await getRelatedRecords({
-                objectApiName: this.selectedObject,
-                parentRecordId: this.recordId,
-                relationshipField: this.objectConfig.relationshipField,
-                fieldNames: fieldNames,
-                sortField: this.sortField,
-                sortDirection: this.sortDirection,
-                limitCount: 50 // Get more than display limit for sorting
-            });
-
-            console.log('Records loaded:', records.length);
-            this.records = records;
-
-        } catch (error) {
-            console.error('Error loading records:', error);
-            this.handleError(error);
-        } finally {
-            this.isLoading = false;
+            console.error('Error getting field value for', fieldApiName, error);
+            return '';
         }
     }
 
     // Event handlers
-    handleActionClick() {
-        console.log('Action button clicked for:', this.selectedObject);
-        this.showToast('Info', 'Record creation functionality coming in later phases', 'info');
+    handleHeaderAction(event) {
+        const actionApiName = event.currentTarget?.dataset?.actionApiName || 
+                             event.detail?.value; // For lightning-menu-item
+        
+        const action = this.headerActions.find(a => a.apiName === actionApiName);
+        
+        console.log('Header action clicked:', action);
+        
+        if (action) {
+            this.executeHeaderAction(action);
+        }
+    }
+
+    executeHeaderAction(action) {
+        console.log('Executing header action:', action);
+        
+        // Handle different action types
+        if (action.type === 'StandardButton') {
+            this.handleStandardAction(action);
+        } else if (action.type === 'CustomButton') {
+            this.handleCustomAction(action);
+        } else {
+            this.showToast('Info', `Action "${action.label}" clicked`, 'info');
+        }
+    }
+
+    handleStandardAction(action) {
+        // Parse the action to determine what to do
+        if (action.label.toLowerCase().includes('new')) {
+            const targetObject = this.extractTargetObject(action);
+            this.navigateToNew(targetObject);
+        } else if (action.label.toLowerCase().includes('email')) {
+            this.openEmailComposer();
+        }
+    }
+
+    extractTargetObject(action) {
+        // Extract target object from action metadata
+        return action.targetSObjectType || this.relatedListId;
+    }
+
+    navigateToNew(objectApiName) {
+        console.log('Navigating to new record for:', objectApiName);
+        
+        this[NavigationMixin.Navigate]({
+            type: 'standard__objectPage',
+            attributes: {
+                objectApiName: objectApiName,
+                actionName: 'new'
+            },
+            state: {
+                defaultFieldValues: this.getDefaultFieldValues(objectApiName)
+            }
+        });
+    }
+
+    getDefaultFieldValues(objectApiName) {
+        // Build default field values to link to parent record
+        if (objectApiName === 'Task' || objectApiName === 'Event') {
+            return `WhatId=${this.recordId}`;
+        } else {
+            // For custom objects, try to detect relationship field
+            const parentObjectName = this.parentObjectApiName;
+            if (parentObjectName) {
+                return `${parentObjectName}__c=${this.recordId}`;
+            }
+        }
+        return '';
+    }
+
+    openEmailComposer() {
+        this[NavigationMixin.Navigate]({
+            type: 'standard__quickAction',
+            attributes: {
+                apiName: 'Global.SendEmail'
+            }
+        });
+    }
+
+    handleCustomAction(action) {
+        console.log('Custom action not yet implemented:', action);
+        this.showToast('Info', `Custom action "${action.label}" not yet implemented`, 'info');
+    }
+
+    handleRowAction(event) {
+        const recordId = event.currentTarget.dataset.recordId;
+        console.log('Row clicked for record:', recordId);
+        
+        // Navigate to record detail
+        this[NavigationMixin.Navigate]({
+            type: 'standard__recordPage',
+            attributes: {
+                recordId: recordId,
+                actionName: 'view'
+            }
+        });
     }
 
     handleSort(event) {
         const fieldName = event.currentTarget.dataset.fieldName;
         console.log('Sort requested for field:', fieldName);
 
-        // Toggle sort direction if same field, otherwise default to ASC
-        if (this.sortField === fieldName) {
-            this.sortDirection = this.sortDirection === 'ASC' ? 'DESC' : 'ASC';
+        // Toggle sort direction
+        if (this.sortedBy === fieldName) {
+            this.sortedDirection = this.sortedDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            this.sortField = fieldName;
-            this.sortDirection = 'ASC';
+            this.sortedBy = fieldName;
+            this.sortedDirection = 'asc';
         }
 
-        console.log('New sort:', this.sortField, this.sortDirection);
-        this.loadRecords();
-    }
-
-    handleTextDisplay(event) {
-        const action = event.detail.value;
-        console.log('Text display action:', action);
-        
-        if (action === 'wrap') {
-            this.wrapText = true;
-        } else if (action === 'clip') {
-            this.wrapText = false;
-        }
-    }
-
-    handleRowAction(event) {
-        const recordId = event.currentTarget.dataset.recordId;
-        const action = event.currentTarget.dataset.action;
-        console.log('Row action:', action, 'for record:', recordId);
-
-        if (action === 'preview') {
-            this.showToast('Info', 'Preview functionality coming in future phases', 'info');
-        } else if (action === 'navigate') {
-            this.showToast('Info', 'Record navigation functionality coming in future phases', 'info');
-        }
+        // The wire will automatically refresh with new sort parameters
     }
 
     handleViewAll() {
-        console.log('View All clicked for:', this.selectedObject);
+        console.log('View All clicked');
         
-        try {
-            let url = '';
-            
-            if (this.selectedObject === 'Internal_Asset_Request__c') {
-                url = `/internal-asset-product/related/${this.recordId}/Case__c`;
-            } else if (this.selectedObject === 'Knowledge__kav') {
-                url = `/article/related/${this.recordId}/CaseArticle`;
-            } else {
-                url = `/related-list/${this.selectedObject}/${this.recordId}`;
+        this[NavigationMixin.Navigate]({
+            type: 'standard__recordRelationshipPage',
+            attributes: {
+                recordId: this.recordId,
+                relationshipApiName: this.relatedListId,
+                actionName: 'view'
             }
-            
-            console.log('Would navigate to:', url);
-            this.showToast('Info', `Would navigate to: ${url}`, 'info');
-            
-            // TODO: Implement actual navigation in later phases
-            // window.location.href = url;
-            
-        } catch (error) {
-            console.error('Error navigating to View All:', error);
-            this.handleError(error);
-        }
-    }
-
-    handleError(error) {
-        this.hasError = true;
-        this.errorMessage = error.body?.message || error.message || 'An unexpected error occurred';
-        console.error('Component error:', this.errorMessage);
-    }
-
-    handleErrorNavigation() {
-        console.log('Navigating to error page');
-        window.location.href = '/error';
+        });
     }
 
     // Utility methods
@@ -369,64 +354,12 @@ export default class RelatedListLWR extends LightningElement {
         this.dispatchEvent(event);
     }
 
-    // Public methods for parent components
+    // Public API methods
     @api
-    refreshRecords() {
+    refresh() {
         console.log('Manual refresh requested');
-        this.loadRecords();
-    }
-
-    @api
-    changeObject(newObjectApiName) {
-        console.log('Changing object to:', newObjectApiName);
-        this.selectedObject = newObjectApiName;
-        this.loadIconName();
-        this.loadConfiguration();
-    }
-    
-    // Configuration validation and help methods
-    validateConfiguration() {
-        const errors = [];
-        
-        if (!this.recordId) {
-            errors.push('Record ID is required');
-        }
-        
-        if (!this.selectedObject) {
-            errors.push('Object API Name is required');
-        }
-        
-        return errors.length > 0 ? errors : null;
-    }
-    
-    getConfigurationHelp() {
-        const help = {
-            objectSpecific: this.getObjectSpecificHelp(),
-            fieldSet: this.getFieldSetHelp(),
-            recordLimit: this.getRecordLimitHelp()
-        };
-        
-        return help;
-    }
-    
-    getObjectSpecificHelp() {
-        const helpMap = {
-            'Knowledge__kav': 'Displays Knowledge Articles linked via CaseArticle junction object. Recommended Field Set: KnowledgeRelatedList with Title, Summary, Article_Type.',
-            'Internal_Asset_Request__c': 'Displays Internal Asset Request records. Recommended Field Set: AssetRequestRelatedList with Name, Status, Request_Type.',
-            'Case': 'Displays related Case records. Create a Field Set with relevant fields like CaseNumber, Subject, Status, Priority.',
-            'Account': 'Displays related Account records. Create a Field Set with relevant fields like Name, Type, Industry.',
-            'Contact': 'Displays related Contact records. Create a Field Set with relevant fields like Name, Title, Email, Phone.',
-            'Opportunity': 'Displays related Opportunity records. Create a Field Set with relevant fields like Name, Stage, Amount, Close_Date.'
-        };
-        
-        return helpMap[this.selectedObject] || 'Generic object display. Create a Field Set in Setup → Object Manager → [Object] → Field Sets with the fields you want to show.';
-    }
-    
-    getFieldSetHelp() {
-        return `Current smart default: "${this.computedFieldSetName}". Override this by specifying a custom Field Set name, or create the recommended Field Set in Setup → Object Manager → ${this.selectedObject} → Field Sets.`;
-    }
-    
-    getRecordLimitHelp() {
-        return `Current smart default: ${this.computedRecordLimit} records. Adjust this based on your layout and user experience needs.`;
+        // With @wire, we can use refreshApex or the wired data will refresh automatically
+        // For now, we could reload the page or trigger a refresh of the wired data
+        return Promise.resolve();
     }
 }

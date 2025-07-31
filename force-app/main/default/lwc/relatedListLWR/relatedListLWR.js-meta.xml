@@ -2,8 +2,8 @@
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>64.0</apiVersion>
     <isExposed>true</isExposed>
-    <masterLabel>Related List</masterLabel>
-    <description>A configurable related list component that supports any Salesforce object with dynamic field configuration via Field Sets</description>
+    <masterLabel>Related List (LWR)</masterLabel>
+    <description>Native Salesforce related list component using Lightning Data Service - automatically uses page layout configuration</description>
     <targets>
         <target>lightningCommunity__Page</target>
         <target>lightningCommunity__Default</target>
@@ -14,27 +14,20 @@
             <!-- CORE CONFIGURATION          -->
             <!-- =========================== -->
             <property name="recordId" type="String" label="Record ID" 
-                      description="The parent record ID. Use {!recordId} to dynamically use the current record ID."
+                      description="The parent record ID. Use {!recordId} for dynamic record pages."
                       default="{!recordId}"/>
             
-            <property name="selectedObject" type="String" label="Object API Name" 
-                      description="API name of the object to display. Examples: 'Account', 'Case', 'Internal_Asset_Request__c', 'Knowledge__kav'"
-                      default="Case"/>
+            <property name="relatedListId" type="String" label="Related List API Name" 
+                      description="API name of the related list as configured in the page layout. Examples: 'Tasks', 'Events', 'Internal_Asset_Request__c', 'ContactRoles', 'Cases'"
+                      default="Tasks"/>
             
-            <property name="relatedListLabel" type="String" label="Related List Label" 
-                      description="Display name for this related list. Leave blank for auto-generated labels based on object type."
+            <property name="relatedListLabel" type="String" label="Custom Label (Optional)" 
+                      description="Override the default related list label. Leave blank to use the label from page layout configuration."
                       default=""/>
             
-            <!-- =========================== -->
-            <!-- OBJECT-SPECIFIC SETTINGS    -->
-            <!-- =========================== -->
-            <property name="fieldSetName" type="String" label="Field Set API Name" 
-                      description="Field set defining columns to display. Leave blank for smart defaults. Create Field Sets in Setup → Object Manager → [Object] → Field Sets."
-                      default=""/>
-            
-            <property name="recordLimit" type="Integer" label="Record Limit" 
-                      description="Number of records to display before showing 'View All'. Use 0 for smart defaults (default: 6 records)."
-                      default="0"/>
+            <property name="recordLimit" type="Integer" label="Records to Display" 
+                      description="Number of records to show before 'View All' button. Default is 6."
+                      default="6"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
