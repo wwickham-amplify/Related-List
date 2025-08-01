@@ -1,6 +1,6 @@
-/* relatedFiles.css - Enhanced with LWR Design Tokens (matching Case Feed Publisher approach) */
+/* relatedFiles.css - Enhanced with Improved File Type Overlays */
 
-/* Card styling - standard approach without custom design tokens */
+/* Card styling */
 .slds-card {
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
     border: 1px solid rgb(221, 219, 218);
@@ -9,17 +9,12 @@
 
 /* Icon spacing in header */
 .slds-media__figure .slds-icon_container {
-    margin-right: 0.75rem;
+    margin-right: 0;
 }
 
 /* Empty state icon styling */
 .slds-icon-text-light {
     color: #b0adab;
-}
-
-/* Button styling - let LWR handle the design tokens automatically */
-lightning-button {
-    /* LWR will automatically apply the correct design tokens */
 }
 
 /* Improved attachment container - better spacing and sizing */
@@ -68,7 +63,7 @@ lightning-button {
     transition: background-color 0.1s ease;
 }
 
-/* File hover overlay */
+/* Enhanced file hover overlay */
 .file-hover-overlay {
     position: absolute;
     top: 0;
@@ -77,7 +72,7 @@ lightning-button {
     bottom: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.75);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -85,6 +80,7 @@ lightning-button {
     transition: opacity 0.2s ease;
     border-radius: 0.25rem;
     z-index: 10;
+    backdrop-filter: blur(2px);
 }
 
 .file-attachment-container:hover .file-hover-overlay {
@@ -93,6 +89,7 @@ lightning-button {
 
 .file-hover-overlay lightning-icon {
     transform: scale(1.5);
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
 }
 
 /* Force white color for overlay icon */
@@ -105,7 +102,7 @@ lightning-button {
     stroke: #ffffff !important;
 }
 
-/* Modal styling with LWR design tokens */
+/* Modal */
 .slds-modal {
     z-index: 9001;
 }
@@ -128,15 +125,13 @@ lightning-button {
     max-height: 70vh;
     width: auto;
     height: auto;
-    border-radius: var(--dxp-g-border-radius, 0.25rem);
-    box-shadow: var(--dxp-g-box-shadow, 0 2px 4px 0 rgba(0, 0, 0, 0.1));
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
     object-fit: contain;
 }
 
-/* Modal header customization */
 .slds-modal__header {
     position: relative;
-    border-bottom: 1px solid var(--dxp-g-neutral-3, #d8dde6);
 }
 
 .slds-modal__close {
@@ -147,23 +142,18 @@ lightning-button {
 }
 
 .slds-modal__title {
-    padding-right: 3rem; /* Make space for close button */
+    padding-right: 3rem;
 }
 
-/* Modal footer */
 .slds-modal__footer_directional {
     display: flex;
     justify-content: flex-end;
-    border-top: 1px solid var(--dxp-g-neutral-3, #d8dde6);
 }
 
-/* Large modal sizing */
 .slds-modal_large .slds-modal__container {
     width: 90%;
     max-width: 1200px;
     min-height: 40vh;
-    background-color: var(--dxp-g-neutral-1, #ffffff);
-    border-radius: var(--dxp-g-border-radius, 0.25rem);
 }
 
 /* Loading and error states */
@@ -174,7 +164,7 @@ lightning-button {
     min-height: 200px;
 }
 
-/* Button styling consistency with LWR design tokens */
+/* Button styling consistency */
 lightning-button-icon {
     opacity: 0.7;
     transition: opacity 0.2s ease;
@@ -191,33 +181,45 @@ lightning-button-icon:hover {
     white-space: nowrap;
 }
 
-/* Enhanced hover states for better UX */
-.file-attachment-container:hover .action-buttons {
-    opacity: 1;
-}
-
-.action-buttons {
-    opacity: 0.8;
-    transition: opacity 0.2s ease;
-}
-
 /* Accessibility improvements */
-.file-attachment-container:focus {
-    outline: 2px solid var(--dxp-g-brand, #0070d2);
+.file-preview-container:focus,
+.image-preview-container:focus {
+    outline: 2px solid #0070d2;
     outline-offset: 2px;
 }
 
 /* Animation for smooth state transitions */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }
 
 .attachment-item {
     animation: fadeIn 0.3s ease-out;
 }
 
-/* Responsive - single column on mobile */
+@keyframes scaleIn {
+    from { 
+        opacity: 0; 
+        transform: scale(0.9); 
+    }
+    to { 
+        opacity: 1; 
+        transform: scale(1); 
+    }
+}
+
+.slds-modal {
+    animation: scaleIn 0.3s ease-out;
+}
+
+/* Enhanced responsive design */
 @media (max-width: 768px) {
     .attachment-container-improved {
         grid-template-columns: 1fr;
@@ -226,8 +228,8 @@ lightning-button-icon:hover {
     
     .slds-modal_large .slds-modal__container {
         width: 95%;
-        max-width: none;
         margin: 1rem;
+        max-height: 90vh;
     }
     
     .modal-image {
@@ -241,5 +243,12 @@ lightning-button-icon:hover {
     
     .slds-box_x-small {
         padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .attachment-container-improved {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
     }
 }

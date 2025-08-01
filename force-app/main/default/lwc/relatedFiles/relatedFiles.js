@@ -20,14 +20,17 @@ export default class RelatedFiles extends LightningElement {
     @track errorMessage = '';
     @track hasError = false;
 
-    // Modal properties
+    // Pagination properties
+    @track currentDisplayCount = 0;
+    @track totalFileCount = 0;
+    @track hasMoreFilesToLoad = false;
+
+    // Enhanced modal properties
     @track showImageModal = false;
     @track modalImageUrl = '';
     @track modalDownloadUrl = '';
     @track modalImageName = '';
     @track modalImageSize = '';
-    @track modalIsImage = false;
-    @track modalFileIcon = 'doctype:unknown';
 
     // File upload properties
     @track isUploading = false;
@@ -37,11 +40,6 @@ export default class RelatedFiles extends LightningElement {
     connectedCallback() {
         console.log('=== RelatedFiles Connected ===');
         console.log('Record ID:', this.recordId);
-        console.log('List Title:', this.listTitle);
-        console.log('Record Limit:', this.recordLimit);
-        console.log('Disable File Upload:', this.disableFileUpload);
-        console.log('Max File Size:', this.maxFileSize);
-        console.log('Accepted File Types:', this.acceptedFileTypes);
         this.loadFiles();
     }
 
@@ -54,23 +52,21 @@ export default class RelatedFiles extends LightningElement {
     }
 
     get titleClasses() {
-        // Map LWR font settings to proper CSS classes (same as Case Feed Publisher)
         const lwrFontMap = {
-            'Heading 1': 'slds-text-heading_large',      // H1 equivalent
-            'Heading 2': 'slds-text-heading_medium',     // H2 equivalent  
-            'Heading 3': 'slds-text-heading_small',      // H3 equivalent
-            'Heading 4': 'slds-text-title_caps',         // H4 equivalent
-            'Heading 5': 'slds-text-title_bold',         // H5 equivalent
-            'Heading 6': 'slds-text-title',              // H6 equivalent
-            'Paragraph 1': 'slds-text-body_regular',     // Large paragraph
-            'Paragraph 2': 'slds-text-body_small'        // Small paragraph
+            'Heading 1': 'slds-text-heading_large',
+            'Heading 2': 'slds-text-heading_medium',
+            'Heading 3': 'slds-text-heading_small',
+            'Heading 4': 'slds-text-title_caps',
+            'Heading 5': 'slds-text-title_bold',
+            'Heading 6': 'slds-text-title',
+            'Paragraph 1': 'slds-text-body_regular',
+            'Paragraph 2': 'slds-text-body_small'
         };
         
         return lwrFontMap[this.titleTextStyle] || lwrFontMap['Heading 3'];
     }
 
     get addFilesButtonVariant() {
-        // Map LWR button styles to Lightning button variants (same as Case Feed Publisher)
         const styleMap = {
             'Primary': 'brand',
             'Secondary': 'brand-outline',
@@ -98,14 +94,12 @@ export default class RelatedFiles extends LightningElement {
     }
 
     get computedRecordLimit() {
-        // Ensure recordLimit is treated as a number and has a sensible default
         const limit = parseInt(this.recordLimit, 10);
         return !isNaN(limit) && limit > 0 ? limit : 8;
     }
 
     get displayedFiles() {
-        // Apply the record limit properly
-        return this.files.slice(0, this.computedRecordLimit);
+        return this.files.slice(0, this.currentDisplayCount);
     }
 
     get hasFiles() {
@@ -117,21 +111,24 @@ export default class RelatedFiles extends LightningElement {
     }
 
     get hasMoreFiles() {
-        return this.files.length > this.computedRecordLimit;
+        // Show "View More" if we have more files to display OR more files to load from server
+        return this.files.length > this.currentDisplayCount || this.hasMoreFilesToLoad;
     }
 
     get viewAllButtonLabel() {
-        const remaining = this.files.length - this.computedRecordLimit;
-        return `View All (${remaining} more)`;
+        if (this.hasMoreFilesToLoad) {
+            return `Load More Files`;
+        } else {
+            const remaining = this.files.length - this.currentDisplayCount;
+            return `Show ${Math.min(remaining, this.computedRecordLimit)} More`;
+        }
     }
 
     get showAddFilesButton() {
-        // Hide the button when uploads are disabled
         return !this.disableFileUpload;
     }
 
     get computedMaxFileSize() {
-        // Convert MB to bytes for validation
         const sizeInMB = parseInt(this.maxFileSize, 10);
         return !isNaN(sizeInMB) && sizeInMB > 0 ? sizeInMB : 25;
     }
@@ -141,12 +138,10 @@ export default class RelatedFiles extends LightningElement {
     }
 
     get computedAcceptedFileTypes() {
-        // Process accepted file types
         if (!this.acceptedFileTypes || this.acceptedFileTypes.trim() === '') {
-            return null; // Accept all types
+            return null;
         }
         
-        // Clean up the input - remove spaces and ensure proper format
         return this.acceptedFileTypes
             .split(',')
             .map(type => type.trim())
@@ -155,26 +150,36 @@ export default class RelatedFiles extends LightningElement {
             .join(',');
     }
 
-    async loadFiles() {
+    async loadFiles(loadMore = false) {
         if (!this.recordId) {
             console.warn('No recordId provided');
             return;
         }
 
         console.log('=== Loading Files ===');
-        console.log('Using record limit:', this.computedRecordLimit);
+        console.log('Load more:', loadMore);
+        console.log('Current display count:', this.currentDisplayCount);
+        
         this.isLoading = true;
         this.hasError = false;
 
         try {
+            // Calculate how many files to request
+            const currentFileCount = this.files.length;
+            const requestLimit = loadMore ? 
+                currentFileCount + this.computedRecordLimit : // Load more files
+                Math.max(this.computedRecordLimit * 2, 20); // Initial load with buffer
+
+            console.log('Requesting limit:', requestLimit);
+
             const rawFiles = await getFiles({
                 recordId: this.recordId,
                 sortField: 'CreatedDate',
                 sortDirection: 'DESC',
-                limitCount: 50 // Get more than display limit for proper limiting
+                limitCount: requestLimit
             });
 
-            console.log('Raw response from Apex:', rawFiles);
+            console.log('Raw response from Apex:', rawFiles?.length || 0, 'files');
             
             if (!rawFiles || !Array.isArray(rawFiles)) {
                 throw new Error('Invalid response from getFiles');
@@ -182,26 +187,40 @@ export default class RelatedFiles extends LightningElement {
 
             // Process the files
             this.files = rawFiles.map((file, index) => {
-                console.log(`File ${index}:`, {
-                    id: file.id,
-                    title: file.title,
-                    fileExtension: file.fileExtension
-                });
-
                 return {
                     id: file.id || 'unknown-id',
                     title: file.title || 'Unknown File',
                     fileExtension: file.fileExtension || '',
+                    fileType: file.fileType || 'Unknown',
                     formattedSize: file.formattedSize || '0 Bytes',
                     icon: this.getFileIcon(file.fileExtension || ''),
                     downloadUrl: file.downloadUrl || `/sfc/servlet.shepherd/document/download/${file.id}`,
                     previewUrl: file.previewUrl || this.generatePreviewUrl(file),
-                    isImage: this.isImageFile(file.fileExtension || '')
+                    isImage: this.isImageFile(file.fileExtension || ''),
+                    canPreview: this.canPreviewFile(file.fileExtension || ''),
+                    createdDate: file.createdDate
                 };
             });
 
+            // Update display count
+            if (loadMore) {
+                // When loading more, increase display count by the record limit
+                this.currentDisplayCount = Math.min(
+                    this.currentDisplayCount + this.computedRecordLimit,
+                    this.files.length
+                );
+            } else {
+                // Initial load - show the record limit number of files
+                this.currentDisplayCount = Math.min(this.computedRecordLimit, this.files.length);
+            }
+
+            // Check if there might be more files on the server
+            // If we got exactly what we requested, there might be more
+            this.hasMoreFilesToLoad = rawFiles.length === requestLimit;
+
             console.log('Processed files:', this.files.length);
-            console.log('Will display:', this.displayedFiles.length);
+            console.log('Currently displaying:', this.currentDisplayCount);
+            console.log('Has more to load from server:', this.hasMoreFilesToLoad);
 
         } catch (error) {
             console.error('Error in loadFiles:', error);
@@ -212,24 +231,47 @@ export default class RelatedFiles extends LightningElement {
         }
     }
 
+    // Handle View More button click
+    handleViewMore() {
+        console.log('=== View More Clicked ===');
+        console.log('Current displayed:', this.currentDisplayCount);
+        console.log('Total files loaded:', this.files.length);
+        console.log('Has more to load from server:', this.hasMoreFilesToLoad);
+
+        // If we have more files already loaded, just show more of them
+        if (this.files.length > this.currentDisplayCount) {
+            this.currentDisplayCount = Math.min(
+                this.currentDisplayCount + this.computedRecordLimit,
+                this.files.length
+            );
+            console.log('Showing more loaded files. New display count:', this.currentDisplayCount);
+        } 
+        // If we need to load more files from the server
+        else if (this.hasMoreFilesToLoad) {
+            console.log('Loading more files from server...');
+            // Use Promise.resolve to handle async safely
+            Promise.resolve().then(() => {
+                return this.loadFiles(true);
+            }).catch(error => {
+                console.error('Error loading more files:', error);
+                this.showToast('Error', 'Failed to load more files: ' + (error.body?.message || error.message), 'error');
+            });
+        }
+    }
+
     // Handle Add Files button click
     handleAddFiles() {
         console.log('=== Add Files Clicked ===');
-        console.log('Disabled:', this.disableFileUpload);
-        console.log('Max Size (MB):', this.computedMaxFileSize);
-        console.log('Accepted Types:', this.computedAcceptedFileTypes);
         
         if (this.disableFileUpload) {
             this.showToast('Info', 'File upload is disabled', 'info');
             return;
         }
 
-        // Create file input element dynamically
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.multiple = true;
         
-        // Set accepted file types if specified
         if (this.computedAcceptedFileTypes) {
             fileInput.accept = this.computedAcceptedFileTypes;
         }
@@ -246,7 +288,6 @@ export default class RelatedFiles extends LightningElement {
         const files = Array.from(event.target.files);
         console.log('Files selected:', files.length);
         
-        // Clear any previous errors
         this.showUploadError = false;
         this.uploadError = '';
         
@@ -254,20 +295,15 @@ export default class RelatedFiles extends LightningElement {
             return;
         }
 
-        // Validate files
         const validFiles = [];
         const errors = [];
 
         for (const file of files) {
-            console.log(`Validating file: ${file.name}, Size: ${file.size} bytes`);
-            
-            // Check file size
             if (file.size > this.maxFileSizeBytes) {
                 errors.push(`File size must be under ${this.computedMaxFileSize}MB. "${file.name}" is too large.`);
                 continue;
             }
 
-            // Check file type if restrictions are set
             if (this.computedAcceptedFileTypes) {
                 const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
                 const acceptedTypes = this.computedAcceptedFileTypes.toLowerCase().split(',');
@@ -281,14 +317,12 @@ export default class RelatedFiles extends LightningElement {
             validFiles.push(file);
         }
 
-        // Show errors if any
         if (errors.length > 0) {
             this.uploadError = errors.join('\n');
             this.showUploadError = true;
-            return; // Don't proceed with upload if there are validation errors
+            return;
         }
 
-        // Upload valid files
         if (validFiles.length > 0) {
             this.uploadFiles(validFiles);
         }
@@ -297,22 +331,16 @@ export default class RelatedFiles extends LightningElement {
     // Upload files to Salesforce
     async uploadFiles(files) {
         console.log('=== Uploading Files ===');
-        console.log('Files to upload:', files.length);
         
-        // Clear any previous errors
         this.showUploadError = false;
         this.uploadError = '';
         this.isUploading = true;
 
         try {
-            // Convert files to base64
             const fileUploadData = [];
             
             for (const file of files) {
-                console.log(`Converting file to base64: ${file.name}`);
-                
                 const base64 = await this.fileToBase64(file);
-                
                 fileUploadData.push({
                     filename: file.name,
                     base64: base64,
@@ -320,16 +348,11 @@ export default class RelatedFiles extends LightningElement {
                 });
             }
 
-            // Call Apex method
-            console.log('Calling Apex uploadFiles method...');
             const uploadedFileIds = await uploadFiles({
                 recordId: this.recordId,
                 files: fileUploadData
             });
 
-            console.log('Files uploaded successfully:', uploadedFileIds);
-            
-            // Show success message
             const fileCount = uploadedFileIds.length;
             const message = fileCount === 1 ? 
                 `1 file uploaded successfully` : 
@@ -337,7 +360,7 @@ export default class RelatedFiles extends LightningElement {
             
             this.showToast('Success', message, 'success');
             
-            // Refresh the file list
+            // Refresh the file list after successful upload
             await this.loadFiles();
 
         } catch (error) {
@@ -354,7 +377,6 @@ export default class RelatedFiles extends LightningElement {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => {
-                // Remove the data URL prefix (data:mime/type;base64,)
                 const base64 = reader.result.split(',')[1];
                 resolve(base64);
             };
@@ -365,15 +387,137 @@ export default class RelatedFiles extends LightningElement {
 
     // Handle Close button click (dismiss error)
     handleCloseError() {
-        console.log('Close error button clicked');
         this.showUploadError = false;
         this.uploadError = '';
     }
 
-    // Handle View All button click
-    handleViewAll() {
-        console.log('View All clicked - will implement navigation later');
-        this.showToast('Info', 'View All functionality coming soon', 'info');
+    // Enhanced file and modal handling
+    handleImageError(event) {
+        console.log('Image load error, falling back to file icon');
+        const target = event.target;
+        const container = target.parentElement;
+        
+        // Hide the broken image
+        target.style.display = 'none';
+        
+        // Update the file to be treated as non-image
+        const fileId = target.closest('[data-file-id]')?.dataset?.fileId;
+        if (fileId) {
+            this.updateFileAsNonImage(fileId);
+        }
+    }
+
+    updateFileAsNonImage(fileId) {
+        this.files = this.files.map(file => {
+            if (file.id === fileId) {
+                return { ...file, isImage: false };
+            }
+            return file;
+        });
+    }
+
+    handleFileClick(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const target = event.currentTarget;
+        const fileId = target.dataset.fileId;
+        const file = this.files.find(f => f.id === fileId);
+        
+        if (file) {
+            // For images, open modal. For other files, download directly
+            if (file.isImage) {
+                this.openFileModal(file);
+            } else {
+                console.log('Direct download for non-image file:', file.title);
+                this.downloadFile(file.downloadUrl, file.title);
+                this.showToast('Success', `Downloading ${file.title}...`, 'success');
+            }
+        }
+    }
+
+    handleImageClick(event) {
+        // Same as handleFileClick since we unified the logic
+        this.handleFileClick(event);
+    }
+
+    openFileModal(file) {
+        console.log('Opening modal for image:', file.title);
+        
+        // Only open modal for images
+        if (!file.isImage) {
+            return;
+        }
+        
+        // Set modal properties for image display
+        this.modalImageName = file.title || 'Unknown File';
+        this.modalImageSize = file.formattedSize || '';
+        this.modalDownloadUrl = file.downloadUrl;
+        this.modalImageUrl = file.previewUrl || file.downloadUrl;
+        
+        this.showImageModal = true;
+    }
+
+    handleCloseModal() {
+        this.showImageModal = false;
+        this.modalImageUrl = '';
+        this.modalDownloadUrl = '';
+        this.modalImageName = '';
+        this.modalImageSize = '';
+    }
+
+    handleModalBackdropClick(event) {
+        if (event.target.classList.contains('slds-backdrop')) {
+            this.handleCloseModal();
+        }
+    }
+
+    handleModalImageError(event) {
+        console.log('Modal image failed to load');
+        // Close modal if image fails to load
+        this.handleCloseModal();
+        this.showToast('Error', 'Unable to preview this image', 'error');
+    }
+
+    handleDownloadFromModal() {
+        const downloadUrl = this.modalDownloadUrl || this.modalImageUrl;
+        if (downloadUrl) {
+            this.downloadFile(downloadUrl, this.modalImageName);
+            this.showToast('Success', `Downloading ${this.modalImageName}...`, 'success');
+        }
+    }
+
+    // Download method
+    downloadFile(url, filename) {
+        try {
+            const downloadWindow = window.open(url, '_blank');
+            
+            if (!downloadWindow || downloadWindow.closed || typeof downloadWindow.closed === 'undefined') {
+                const link = document.createElement('a');
+                link.href = url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                
+                if (url.startsWith('blob:') || url.startsWith('data:')) {
+                    link.download = filename || 'download';
+                }
+                
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                }, 100);
+            }
+            
+        } catch (error) {
+            try {
+                window.location.href = url;
+            } catch (navError) {
+                this.showToast('Error', 'Unable to download file. Please try right-clicking and selecting "Save As"', 'error');
+            }
+        }
     }
 
     showToast(title, message, variant) {
@@ -381,7 +525,7 @@ export default class RelatedFiles extends LightningElement {
         this.dispatchEvent(event);
     }
 
-    // Get appropriate doctype icon based on file extension
+    // File type helper methods
     getFileIcon(fileExtension) {
         if (!fileExtension) return 'doctype:unknown';
         
@@ -404,18 +548,26 @@ export default class RelatedFiles extends LightningElement {
         return iconMap[ext] || 'doctype:unknown';
     }
 
-    // Check if file extension represents an image
     isImageFile(fileExtension) {
         if (!fileExtension) return false;
         const imageExtensions = new Set(['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg']);
         return imageExtensions.has(fileExtension.toLowerCase());
     }
 
-    // Generate appropriate preview URL for file
+    isPDFFile(fileExtension) {
+        if (!fileExtension) return false;
+        return fileExtension.toLowerCase() === 'pdf';
+    }
+
+    canPreviewFile(fileExtension) {
+        if (!fileExtension) return false;
+        const previewableExtensions = new Set(['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg', 'pdf']);
+        return previewableExtensions.has(fileExtension.toLowerCase());
+    }
+
     generatePreviewUrl(file) {
         const fileExt = (file.fileExtension || '').toLowerCase();
         
-        // For images, use rendition download for better preview
         if (this.isImageFile(file.fileExtension)) {
             let rendition = 'PNG';
             if (fileExt === 'jpg' || fileExt === 'jpeg') {
@@ -424,67 +576,12 @@ export default class RelatedFiles extends LightningElement {
                 rendition = 'GIF';
             }
             
-            // Try to get the version ID from the file data, or use the file ID
             const versionId = file.latestPublishedVersionId || file.id;
             const contentId = file.contentDocumentId || file.id;
             
             return `/sfsites/c/sfc/servlet.shepherd/version/renditionDownload?rendition=${rendition}&versionId=${versionId}&operationContext=CHATTER&contentId=${contentId}&page=1`;
         }
         
-        // For non-images, use download URL
         return `/sfc/servlet.shepherd/document/download/${file.id}`;
-    }
-
-    // Modal event handlers
-    handleFileClick(event) {
-        const fileId = event.currentTarget.dataset.fileId;
-        const file = this.files.find(f => f.id === fileId);
-        
-        console.log('File clicked:', file?.title);
-
-        if (file) {
-            // Set modal properties
-            this.modalImageUrl = file.previewUrl;
-            this.modalDownloadUrl = file.downloadUrl;
-            this.modalImageName = file.title || 'Unknown File';
-            this.modalImageSize = file.formattedSize || '';
-            this.modalIsImage = file.isImage || false;
-            this.modalFileIcon = file.icon || 'doctype:unknown';
-            this.showImageModal = true;
-        }
-    }
-
-    handleCloseModal() {
-        this.showImageModal = false;
-        this.modalImageUrl = '';
-        this.modalDownloadUrl = '';
-        this.modalImageName = '';
-        this.modalImageSize = '';
-        this.modalIsImage = false;
-        this.modalFileIcon = 'doctype:unknown';
-    }
-
-    handleModalBackdropClick(event) {
-        if (event.target.classList.contains('slds-backdrop')) {
-            this.handleCloseModal();
-        }
-    }
-
-    handleDownloadFromModal() {
-        console.log('Download from modal:', this.modalImageName);
-        const downloadUrl = this.modalDownloadUrl || this.modalImageUrl;
-        
-        if (downloadUrl) {
-            // Create temporary download link
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = this.modalImageName;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            this.showToast('Success', `Downloaded ${this.modalImageName}`, 'success');
-        }
     }
 }
