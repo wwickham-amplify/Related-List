@@ -1,8 +1,8 @@
 /**
- * RelatedListController - Apex controller for Related List LWC
+ * RelatedListControllerLWR - Apex controller for Related List LWC
  * Handles dynamic object queries and layout retrieval for generic related lists
  */
-public with sharing class RelatedListController {
+public with sharing class RelatedListControllerLWR {
     
     /**
      * Wrapper class for object options

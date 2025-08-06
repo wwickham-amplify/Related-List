@@ -30,19 +30,15 @@ public with sharing class CaseArticlesController {
     public static List<ArticleData> getCaseArticles(String caseId) {
         List<ArticleData> articles = new List<ArticleData>();
         
-        try {
-            System.debug('Getting case articles for case: ' + caseId);
-            
+        try {            
             // Validate input
             if (String.isBlank(caseId)) {
-                System.debug('Case ID is blank');
                 return articles;
             }
             
             // Verify the case exists and user has access
             List<Case> cases = [SELECT Id FROM Case WHERE Id = :caseId LIMIT 1];
             if (cases.isEmpty()) {
-                System.debug('Case not found or not accessible: ' + caseId);
                 return articles;
             }
             
@@ -53,9 +49,7 @@ public with sharing class CaseArticlesController {
                 WHERE CaseId = :caseId
                 AND KnowledgeArticleVersionId != NULL
             ];
-            
-            System.debug('Found ' + caseArticles.size() + ' CaseArticle records');
-            
+                        
             if (caseArticles.isEmpty()) {
                 return articles;
             }
@@ -65,9 +59,7 @@ public with sharing class CaseArticlesController {
             for (CaseArticle ca : caseArticles) {
                 knowledgeArticleVersionIds.add(ca.KnowledgeArticleVersionId);
             }
-            
-            System.debug('Knowledge Article Version IDs: ' + knowledgeArticleVersionIds);
-            
+                        
             // Query Knowledge articles with required fields
             // Note: Only published articles that the user has access to will be returned
             List<Knowledge__kav> knowledgeArticles = [
@@ -78,9 +70,7 @@ public with sharing class CaseArticlesController {
                 AND PublishStatus = 'Online'
                 ORDER BY LastModifiedDate DESC
             ];
-            
-            System.debug('Found ' + knowledgeArticles.size() + ' accessible Knowledge Articles');
-            
+                        
             // Convert to wrapper objects
             for (Knowledge__kav article : knowledgeArticles) {
                 ArticleData articleData = new ArticleData(
@@ -89,9 +79,7 @@ public with sharing class CaseArticlesController {
                     article.UrlName
                 );
                 articles.add(articleData);
-                
-                System.debug('Added article: ' + article.Title + ' (UrlName: ' + article.UrlName + ')');
-            }
+                            }
             
         } catch (Exception e) {
             System.debug('Error getting case articles: ' + e.getMessage());
@@ -102,7 +90,6 @@ public with sharing class CaseArticlesController {
             throw new AuraHandledException('Unable to load case articles: ' + e.getMessage());
         }
         
-        System.debug('Returning ' + articles.size() + ' articles');
         return articles;
     }
     

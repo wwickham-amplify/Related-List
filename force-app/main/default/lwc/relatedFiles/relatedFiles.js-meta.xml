@@ -3,16 +3,14 @@
     <apiVersion>64.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Related Files</masterLabel>
-    <description>File attachments component with upload, preview, and download capabilities</description>
+    <description>File display component with preview and download capabilities</description>
     <targets>
         <target>lightningCommunity__Page</target>
         <target>lightningCommunity__Default</target>
     </targets>
     <targetConfigs>
         <targetConfig targets="lightningCommunity__Default">
-            <!-- =========================== -->
-            <!-- CORE CONFIGURATION          -->
-            <!-- =========================== -->
+            <!-- Core Configuration -->
             <property name="recordId" type="String" label="Record ID" 
                       description="The parent record ID. Use {!recordId} to dynamically use the current record ID."
                       default="{!recordId}"/>
@@ -21,47 +19,15 @@
                       description="Display name for the file list. Leave blank for 'Files'."
                       default=""/>
             
-            <property name="recordLimit" type="Integer" label="Files to Show" 
-                      description="Number of files to display before showing count. Default is 8."
-                      default="8"/>
+            <property name="initialLoadAmount" type="Integer" label="Initial Files to Show" 
+                      description="Number of files to display initially before showing View More. Default is 6."
+                      default="6"/>
             
-            <!-- =========================== -->
-            <!-- FILE UPLOAD SETTINGS        -->
-            <!-- =========================== -->
-            <property name="disableFileUpload" type="Boolean" label="Disable File Upload" 
-                      description="Check this box to disable file upload functionality. Upload is enabled by default."
-                      default="false"/>
-            
-            <property name="maxFileSize" type="Integer" label="Max File Size (MB)" 
-                      description="Maximum file size in megabytes for uploads. Default is 25 MB."
-                      default="25"/>
-            
-            <property name="acceptedFileTypes" type="String" label="Accepted File Types" 
-                      description="Comma-separated file extensions (e.g. 'pdf,doc,jpg') or leave blank to accept all file types."
-                      default=""/>
-            
-            <!-- =========================== -->
-            <!-- STYLING SETTINGS            -->
-            <!-- =========================== -->
+            <!-- Styling Settings -->
             <property name="titleTextStyle" type="String" label="Title Text Style" 
                       description="Typography style for the list title"
                       datasource="Heading 1,Heading 2,Heading 3,Heading 4,Heading 5,Heading 6,Paragraph 1,Paragraph 2"
                       default="Heading 3"/>
-            
-            <property name="addFilesButtonStyle" type="String" label="Add Files Button Style" 
-                      description="Visual style for the Add Files button"
-                      datasource="Primary,Secondary,Tertiary"
-                      default="Secondary"/>
-            
-            <property name="viewAllButtonStyle" type="String" label="View All Button Style" 
-                      description="Visual style for the View All button"
-                      datasource="Primary,Secondary,Tertiary"
-                      default="Secondary"/>
-            
-            <property name="closeButtonStyle" type="String" label="Close Button Style" 
-                      description="Visual style for the Close button (error state)"
-                      datasource="Primary,Secondary,Tertiary"
-                      default="Secondary"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
