@@ -19,7 +19,7 @@
             
             <property name="selectedObject" type="String" label="Object API Name" 
                       description="API name of the object to display. Examples: 'Account', 'Case', 'Internal_Asset_Request__c', 'Knowledge__kav'"
-                      default="Case"/>
+                      default=""/>
             
             <property name="relatedListLabel" type="String" label="Related List Label" 
                       description="Display name for this related list. Leave blank for auto-generated labels based on object type."
@@ -34,7 +34,21 @@
             
             <property name="recordLimit" type="Integer" label="Record Limit" 
                       description="Number of records to display before showing 'View All'. Use 0 for smart defaults (default: 6 records)."
-                      default="0"/>
+                      default="6"/>
+            
+            <property name="titleTextStyle" type="String" label="Title Text Style" 
+                      description="Typography style for the list title"
+                      datasource="Heading 1,Heading 2,Heading 3,Heading 4,Heading 5,Heading 6,Paragraph 1,Paragraph 2"
+                      default="Heading 3"/>
+
+            <!-- =========================== -->
+            <!-- NAVIGATION CONFIGURATION     -->
+            <!-- =========================== -->
+            <property name="targetSitePage" type="String" label="Target Page Path" 
+                      description="Replace 'object' in the path with the page name. Keep :recordId for dynamic substitution of the related record. Leave blank to disable navigation."
+                      default=""
+                      placeholder="/object/:recordId"/>
+        
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

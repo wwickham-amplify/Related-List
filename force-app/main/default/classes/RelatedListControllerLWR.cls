@@ -5,23 +5,6 @@
 public with sharing class RelatedListControllerLWR {
     
     /**
-     * Wrapper class for object options
-     */
-    public class ObjectOption {
-        @AuraEnabled public String label { get; set; }
-        @AuraEnabled public String value { get; set; }
-        @AuraEnabled public String apiName { get; set; }
-        @AuraEnabled public Boolean isSpecial { get; set; }
-        
-        public ObjectOption(String label, String apiName, Boolean isSpecial) {
-            this.label = label;
-            this.value = apiName;
-            this.apiName = apiName;
-            this.isSpecial = isSpecial;
-        }
-    }
-    
-    /**
      * Wrapper class for field metadata
      */
     public class FieldMetadata {
@@ -44,7 +27,6 @@ public with sharing class RelatedListControllerLWR {
         @AuraEnabled public String relationshipField { get; set; }
         @AuraEnabled public List<FieldMetadata> columns { get; set; }
         @AuraEnabled public String icon { get; set; }
-        @AuraEnabled public Boolean isSpecialObject { get; set; }
         
         public RelatedListConfig() {
             this.columns = new List<FieldMetadata>();
@@ -73,7 +55,6 @@ public with sharing class RelatedListControllerLWR {
         
         try {
             config.objectApiName = objectApiName;
-            config.isSpecialObject = false; // Generic related lists don't have special handling
             
             // Get object metadata
             Schema.SObjectType objType = Schema.getGlobalDescribe().get(objectApiName);
@@ -104,6 +85,7 @@ public with sharing class RelatedListControllerLWR {
     /**
      * Auto-detect the relationship field to the parent record
      */
+    @TestVisible
     private static String detectRelationshipField(Schema.DescribeSObjectResult objDescribe, String parentRecordId) {
         if (String.isBlank(parentRecordId)) {
             return null;
@@ -113,12 +95,6 @@ public with sharing class RelatedListControllerLWR {
         Id parentId = Id.valueOf(parentRecordId);
         String parentObjectType = parentId.getSObjectType().getDescribe().getName();
         System.debug('Parent object type: ' + parentObjectType + ', Target object: ' + objDescribe.getName());
-        
-        // Special handling for Knowledge Articles - they use junction objects
-        if (objDescribe.getName() == 'Knowledge__kav') {
-            System.debug('Knowledge Article detected - this requires junction object handling');
-            return null; // Will need special query logic
-        }
         
         // Look for fields that reference the parent object
         Map<String, Schema.SObjectField> fieldMap = objDescribe.fields.getMap();
@@ -153,6 +129,7 @@ public with sharing class RelatedListControllerLWR {
     /**
      * Get field set columns for an object
      */
+    @TestVisible
     private static List<FieldMetadata> getFieldSetColumns(String objectApiName, String fieldSetName) {
         List<FieldMetadata> columns = new List<FieldMetadata>();
         
@@ -234,6 +211,7 @@ public with sharing class RelatedListControllerLWR {
     /**
      * Fallback columns when field set is not available
      */
+    @TestVisible
     private static List<FieldMetadata> getFallbackColumns(String objectApiName, Schema.DescribeSObjectResult objDescribe) {
         List<FieldMetadata> columns = new List<FieldMetadata>();
         
@@ -315,6 +293,7 @@ public with sharing class RelatedListControllerLWR {
     /**
      * Get the actual Salesforce icon for an object type using the new icon method
      */
+    @TestVisible
     private static String getObjectIcon(String objectApiName) {
         try {
             return getIconName(objectApiName);
@@ -430,6 +409,7 @@ public with sharing class RelatedListControllerLWR {
     /**
      * Enhanced fallback for custom objects when tab-based approach fails
      */
+    @TestVisible
     private static String getCustomObjectFallbackIcon(String objectApiName) {
         String lowerName = objectApiName.toLowerCase();
         
@@ -464,11 +444,6 @@ public with sharing class RelatedListControllerLWR {
         List<RelatedRecord> records = new List<RelatedRecord>();
         
         try {
-            // Special handling for Knowledge Articles
-            if (objectApiName == 'Knowledge__kav') {
-                return getKnowledgeArticleRecords(parentRecordId, fieldNames, sortField, sortDirection, limitCount);
-            }
-            
             if (String.isBlank(relationshipField)) {
                 System.debug('No relationship field found for ' + objectApiName);
                 return records;
@@ -553,103 +528,9 @@ public with sharing class RelatedListControllerLWR {
     }
     
     /**
-     * Get Knowledge Article records related to a Case through CaseArticle junction
-     */
-    private static List<RelatedRecord> getKnowledgeArticleRecords(
-        String parentRecordId, 
-        List<String> fieldNames,
-        String sortField,
-        String sortDirection,
-        Integer limitCount
-    ) {
-        List<RelatedRecord> records = new List<RelatedRecord>();
-        
-        try {
-            System.debug('Getting Knowledge Articles for Case: ' + parentRecordId);
-            
-            // Get the KnowledgeArticleVersionId from CaseArticle junction
-            List<CaseArticle> caseArticles = [
-                SELECT KnowledgeArticleVersionId 
-                FROM CaseArticle 
-                WHERE CaseId = :parentRecordId
-            ];
-            
-            System.debug('Found ' + caseArticles.size() + ' CaseArticle records');
-            
-            if (caseArticles.isEmpty()) {
-                return records;
-            }
-            
-            // Extract Knowledge Article Version IDs
-            Set<Id> knowledgeArticleVersionIds = new Set<Id>();
-            for (CaseArticle ca : caseArticles) {
-                if (ca.KnowledgeArticleVersionId != null) {
-                    knowledgeArticleVersionIds.add(ca.KnowledgeArticleVersionId);
-                }
-            }
-            
-            if (knowledgeArticleVersionIds.isEmpty()) {
-                System.debug('No KnowledgeArticleVersionIds found');
-                return records;
-            }
-            
-            // Build SOQL for Knowledge__kav using the specific version IDs
-            List<String> selectFields = new List<String>{'Id'};
-            selectFields.addAll(fieldNames);
-            
-            String selectClause = 'SELECT ' + String.join(selectFields, ', ');
-            String fromClause = ' FROM Knowledge__kav';
-            String whereClause = ' WHERE Id IN :knowledgeArticleVersionIds';
-            
-            String orderByClause = '';
-            if (String.isNotBlank(sortField)) {
-                orderByClause = ' ORDER BY ' + sortField;
-                if (String.isNotBlank(sortDirection) && 
-                    (sortDirection.toUpperCase() == 'ASC' || sortDirection.toUpperCase() == 'DESC')) {
-                    orderByClause += ' ' + sortDirection.toUpperCase();
-                }
-            }
-            
-            String limitClause = '';
-            if (limitCount != null && limitCount > 0) {
-                limitClause = ' LIMIT ' + limitCount;
-            }
-            
-            String query = selectClause + fromClause + whereClause + orderByClause + limitClause;
-            System.debug('Knowledge Article query: ' + query);
-            
-            List<Knowledge__kav> articles = Database.query(query);
-            System.debug('Found ' + articles.size() + ' Knowledge Articles');
-            
-            // Convert to RelatedRecord format
-            for (Knowledge__kav article : articles) {
-                RelatedRecord record = new RelatedRecord();
-                record.id = article.Id;
-                
-                for (String fieldName : fieldNames) {
-                    Object fieldValue = article.get(fieldName);
-                    record.fields.put(fieldName, fieldValue);
-                    
-                    // Set display name from first field
-                    if (record.displayName == null && fieldValue != null) {
-                        record.displayName = String.valueOf(fieldValue);
-                    }
-                }
-                
-                records.add(record);
-            }
-            
-        } catch (Exception e) {
-            System.debug('Error getting Knowledge Article records: ' + e.getMessage());
-            throw new AuraHandledException('Unable to retrieve Knowledge Articles: ' + e.getMessage());
-        }
-        
-        return records;
-    }
-    
-    /**
      * Build dynamic SOQL query with proper lookup field handling
      */
+    @TestVisible
     private static String buildDynamicQuery(
         String objectApiName,
         List<String> fieldNames, 
