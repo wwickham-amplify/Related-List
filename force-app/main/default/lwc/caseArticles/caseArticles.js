@@ -20,7 +20,11 @@ export default class CaseArticles extends LightningElement {
     wiredArticles({ error, data }) {
         this.isLoading = false;
         if (data) {
-            this.allArticles = data;
+            // Add articleUrl to each article for proper href display
+            this.allArticles = data.map(article => ({
+                ...article,
+                articleUrl: this.constructArticleUrl(article.urlName) || '#'
+            }));
             this.displayedArticles = this.allArticles.slice(0, this.initialLoadCount);
             this.error = null;
         } else if (error) {
@@ -85,18 +89,105 @@ export default class CaseArticles extends LightningElement {
         return typographyMap[this.titleLevel] || 'slds-text-heading_small';
     }
 
-    // Handle article link clicks
-    handleArticleClick(event) {
+    // Handle refresh button click
+    async handleRefresh() {
+        console.log('Manual refresh requested for case articles');
+        this.isLoading = true;
+        this.error = null; // Clear any existing errors
+        
+        try {
+            await this.refresh();
+            this.showToast('Success', 'Articles refreshed', 'success');
+        } catch (error) {
+            console.error('Error during refresh:', error);
+            this.showToast('Error', 'Failed to refresh articles: ' + (error.body?.message || error.message), 'error');
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    // Navigation helper methods
+    getSiteBaseUrl() {
+        // Get the current site's base URL
+        const currentUrl = window.location.href;
+        const url = new URL(currentUrl);
+        
+        console.log('Current URL for site base extraction:', currentUrl);
+        console.log('URL pathname:', url.pathname);
+        
+        // For Experience Cloud sites, we need to capture the full site path
+        if (url.hostname.includes('.my.site.com') || 
+            url.hostname.includes('.force.com') ||
+            url.hostname.includes('salesforce-experience.com')) {
+            
+            // Salesforce-hosted site (including sandbox URLs)
+            const pathParts = url.pathname.split('/').filter(part => part !== '');
+            console.log('Path parts:', pathParts);
+            
+            if (pathParts.length > 0) {
+                // Include the full site path
+                const sitePath = pathParts[0];
+                const siteBaseUrl = `${url.origin}/${sitePath}`;
+                console.log('Detected site base URL:', siteBaseUrl);
+                return siteBaseUrl;
+            }
+            
+            console.log('No path parts found, using origin only');
+            return url.origin;
+        } else {
+            // Custom domain - might still have a path
+            const pathParts = url.pathname.split('/').filter(part => part !== '');
+            if (pathParts.length > 0) {
+                // Check if we're in a subpath (like /portal/)
+                const potentialSitePath = pathParts[0];
+                const siteBaseUrl = `${url.origin}/${potentialSitePath}`;
+                console.log('Custom domain with path detected:', siteBaseUrl);
+                return siteBaseUrl;
+            }
+            
+            console.log('Custom domain root detected:', url.origin);
+            return url.origin;
+        }
+    }
+
+    constructArticleUrl(urlName) {
+        if (!urlName) {
+            return null;
+        }
+
+        try {
+            const siteBaseUrl = this.getSiteBaseUrl();
+            const fullUrl = `${siteBaseUrl}/article/${urlName}`;
+            console.log('Constructed article URL:', fullUrl, 'from urlName:', urlName);
+            return fullUrl;
+        } catch (error) {
+            console.error('Error constructing article URL:', error);
+            return null;
+        }
+    }
+
+    // Handle article link click
+    handleRecordNavigation(event) {
         event.preventDefault();
+        
         const urlName = event.currentTarget.dataset.urlName;
         const articleId = event.currentTarget.dataset.articleId;
         
-        if (urlName) {
-            // Navigate to the article using the URL name
-            const articleUrl = `/article/${urlName}`;
-            window.open(articleUrl, '_blank');
+        console.log('Article navigation clicked:', { urlName, articleId });
+        
+        if (!urlName) {
+            console.error('No urlName found for article:', articleId);
+            this.showToast('Error', 'Unable to navigate to article', 'error');
+            return;
+        }
+
+        const articleUrl = this.constructArticleUrl(urlName);
+        if (articleUrl) {
+            console.log('Navigating to article URL:', articleUrl);
+            window.location.href = articleUrl;
         } else {
-            console.warn('No URL name found for article:', articleId);
+            console.error('Failed to construct article URL for:', urlName);
+            this.showToast('Error', 'Unable to navigate to article', 'error');
         }
     }
 
@@ -114,7 +205,11 @@ export default class CaseArticles extends LightningElement {
         // Re-execute the wire by clearing and resetting
         return getCaseArticles({ caseId: this.recordId })
             .then(result => {
-                this.allArticles = result;
+                // Add articleUrl to each article for proper href display
+                this.allArticles = result.map(article => ({
+                    ...article,
+                    articleUrl: this.constructArticleUrl(article.urlName) || '#'
+                }));
                 this.displayedArticles = this.allArticles.slice(0, this.initialLoadCount);
                 this.error = null;
                 this.isLoading = false;
@@ -124,7 +219,7 @@ export default class CaseArticles extends LightningElement {
                 this.allArticles = [];
                 this.displayedArticles = [];
                 this.isLoading = false;
-                this.showToast('Error', 'Failed to refresh articles', 'error');
+                throw error; // Re-throw for handleRefresh to catch
             });
     }
 

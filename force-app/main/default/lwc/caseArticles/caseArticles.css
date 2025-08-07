@@ -5,11 +5,6 @@
     --slds-c-card-color-background: var(--dxp-g-root-color-background-alt);
 }
 
-/* Title icon spacing - 32x32 with 0.75rem margin */
-.slds-media__figure lightning-icon {
-    margin-right: 0.75rem;
-}
-
 /* Simple list styling - no hover effects */
 .slds-list__item {
     border-top: 1px solid #e5e5e5;
@@ -23,6 +18,10 @@
 
 .slds-p-around_medium {
     padding-top: 0;
+}
+
+.slds-media__figure {
+    margin-right: 0;
 }
 
 /* Article link styling using LWR design tokens */

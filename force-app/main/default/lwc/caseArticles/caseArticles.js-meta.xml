@@ -35,6 +35,7 @@
             <property name="loadMoreCount" type="Integer" label="Load More Count" 
                       description="Number of additional articles to load when 'Load More' is clicked."
                       default="3"/>
+
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

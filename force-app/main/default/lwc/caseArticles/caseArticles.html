@@ -14,6 +14,16 @@
                 <span class={titleClass}>{listTitle}</span>
             </div>
         </div>
+        
+        <!-- Header Actions -->
+        <div slot="actions">
+            <lightning-button-icon 
+                icon-name="utility:refresh" 
+                alternative-text="Refresh"
+                title="Refresh"
+                onclick={handleRefresh}>
+            </lightning-button-icon>
+        </div>
 
         <!-- Card Body using native lightning-card patterns -->
         <div class="slds-p-around_medium">
@@ -49,7 +59,7 @@
                             <lightning-button
                                 label="Retry"
                                 variant="neutral"
-                                onclick={refresh}>
+                                onclick={handleRefresh}>
                             </lightning-button>
                         </div>
                     </lightning-layout-item>
@@ -80,11 +90,11 @@
                 <ul class="slds-list_vertical slds-has-dividers_top-space">
                     <template for:each={displayedArticles} for:item="article">
                         <li key={article.id} class="slds-list__item slds-p-vertical_small">
-                            <a href="#" 
+                            <a href={article.articleUrl} 
                                class="article-link"
                                data-article-id={article.id}
                                data-url-name={article.urlName}
-                               onclick={handleArticleClick}
+                               onclick={handleRecordNavigation}
                                title={article.title}>
                                 {article.title}
                             </a>
