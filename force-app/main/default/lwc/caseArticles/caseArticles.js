@@ -5,8 +5,7 @@ import getCaseArticles from '@salesforce/apex/CaseArticlesController.getCaseArti
 export default class CaseArticles extends LightningElement {
     @api recordId; // Current case record ID
     @api componentTitle = 'Case Articles'; // Configurable title
-    @api titleLevel = 'Heading 3'; // LWR typography level
-    @api iconName = 'standard:knowledge'; // SLDS icon name
+    @api iconName = ''; // Static SLDS icon name (e.g., 'standard:knowledge')
     @api initialLoadCount = 3; // Number of articles to show initially
     @api loadMoreCount = 3; // Number of articles to load each time "Load More" is clicked
     
@@ -37,7 +36,7 @@ export default class CaseArticles extends LightningElement {
 
     // Computed properties
     get hasArticles() {
-        return this.displayedArticles && this.displayedArticles.length > 0;
+        return !this.isLoading && !this.error && this.displayedArticles && this.displayedArticles.length > 0;
     }
 
     get hasNoArticles() {
@@ -45,7 +44,7 @@ export default class CaseArticles extends LightningElement {
     }
 
     get hasError() {
-        return this.error != null;
+        return !!this.error;
     }
 
     get errorMessage() {
@@ -74,19 +73,9 @@ export default class CaseArticles extends LightningElement {
         return `Load ${toLoad} More`;
     }
 
-    get titleClass() {
-        // Map LWR typography levels to SLDS classes
-        const typographyMap = {
-            'Heading 1': 'slds-text-heading_large',
-            'Heading 2': 'slds-text-heading_medium',
-            'Heading 3': 'slds-text-heading_small',
-            'Heading 4': 'slds-text-title_caps',
-            'Heading 5': 'slds-text-title',
-            'Heading 6': 'slds-text-body_regular',
-            'Paragraph 1': 'slds-text-body_regular',
-            'Paragraph 2': 'slds-text-body_small'
-        };
-        return typographyMap[this.titleLevel] || 'slds-text-heading_small';
+    // Simple check - only show icon if it's provided and properly formatted
+    get shouldShowIcon() {
+        return this.iconName && this.iconName.includes(':');
     }
 
     // Handle refresh button click

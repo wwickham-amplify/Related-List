@@ -1,35 +1,43 @@
 <template>
-    <div class="slds-card">
-        <!-- Header -->
-        <div class="slds-card__header slds-grid">
-            <header class="slds-media slds-media_center slds-has-flexi-truncate">
-                <div class="slds-media__figure">
-                    <span class="slds-icon_container">
-                        <lightning-icon 
-                            icon-name="doctype:attachment" 
-                            size="small" 
-                            alternative-text="Files">
-                        </lightning-icon>
-                    </span>
+    <div class="component-container">
+        <!-- Header Section with Gray Background -->
+        <div class="header-section">
+            <div class="slds-grid slds-grid_align-spread">
+                <div class="slds-col">
+                    <h3 class="slds-grid slds-grid_vertical-align-center header-title">
+                        <template if:true={shouldShowIcon}>
+                            <lightning-icon 
+                                icon-name={relatedListIcon} 
+                                size="small" 
+                                alternative-text="Related List Icon"
+                                class="slds-m-right_x-small">
+                            </lightning-icon>
+                        </template>
+                        <span>
+                            {listTitleWithCount}
+                        </span>
+                    </h3>
                 </div>
-                <div class="slds-media__body">
-                    <h2 class="slds-card__header-title">
-                        <span class={titleClasses}>{listTitleWithCount}</span>
-                    </h2>
+                
+                <!-- Action Buttons on Right -->
+                <div class="slds-col slds-no-flex">
+                    <div class="slds-grid slds-grid_vertical-align-center slds-wrap">
+                        <!-- Refresh Button -->
+                        <div class="slds-col">
+                            <lightning-button-icon
+                                icon-name="utility:refresh"
+                                alternative-text="Refresh"
+                                title="Refresh"
+                                onclick={handleRefresh}
+                                class="slds-m-right_x-small">
+                            </lightning-button-icon>
+                        </div>
+                    </div>
                 </div>
-                <div class="slds-no-flex">
-                    <lightning-button-icon 
-                        icon-name="utility:refresh" 
-                        alternative-text="Refresh"
-                        title="Refresh"
-                        onclick={handleRefresh}
-                        class="slds-m-left_x-small">
-                    </lightning-button-icon>
-                </div>
-            </header>
+            </div>
         </div>
 
-        <div class="slds-card__body slds-card__body_inner">
+        <div class="content-area">
             <!-- Loading -->
             <template if:true={isLoading}>
                 <div class="slds-align_absolute-center slds-p-vertical_large">
@@ -117,7 +125,7 @@
                             label={viewMoreButtonLabel}
                             title="Load more files"
                             onclick={handleViewMore}
-                            variant="neutral">
+                            variant="base">
                         </lightning-button>
                     </div>
                 </template>
@@ -126,19 +134,9 @@
             <!-- No Files Placeholder -->
             <template if:false={hasFiles}>
                 <template if:false={isLoading}>
-                    <template if:false={hasError}>
-                        <div class="slds-align_absolute-center slds-p-vertical_x-large">
-                            <div class="slds-text-align_center">
-                                <div class="slds-p-bottom_medium">
-                                    <lightning-icon icon-name="doctype:attachment" size="large" class="slds-icon-text-light"></lightning-icon>
-                                </div>
-                                <div class="slds-text-heading_medium slds-p-bottom_small">No files found</div>
-                                <div class="slds-text-body_regular slds-text-color_weak">
-                                    No files are attached to this case.
-                                </div>
-                            </div>
-                        </div>
-                    </template>
+                    <div class="empty-state-enhanced">
+                        <!-- No content shown for empty state -->
+                    </div>
                 </template>
             </template>
         </div>

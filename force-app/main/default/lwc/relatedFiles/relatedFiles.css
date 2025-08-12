@@ -1,19 +1,55 @@
+/* Component container with border and proper spacing */
+.component-container {
+    background-color: var(--dxp-c-record-list-table-body-background-color, white);
+    border: var(--dxp-c-record-list-header-border-width, 1px) solid var(--dxp-c-record-list-header-border-color, #E5E5E5);
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+    margin: 0;
+    overflow: hidden; /* Ensures header background goes to edges */
+}
+
+/* Header section with gray background */
+.header-section {
+    background-color: rgb(242, 242, 242);
+    margin: 0;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0;
+}
+
+/* Header title using site base font */
+.header-title {
+    font-family: var(--dxp-s-base-font-family, var(--dxp-s-body-font-family));
+    font-size: var(--dxp-s-base-font-size, var(--dxp-s-body-font-size));
+    margin: 0;
+    padding: 0;
+}
+
+/* Content area padding (everything except header) */
+.content-area {
+    padding: 0.75rem 1rem;
+}
+
+/* Enhanced empty state - shows header but minimal content */
+.empty-state-enhanced {
+    /* No content needed - just header will show */
+}
+
 /* Card styling */
-.slds-card {
+/* .slds-card {
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
     border: 1px solid rgb(221, 219, 218);
     border-radius: 0.25rem;
-}
+} */
 
 /* Files container with scrolling */
-.slds-card__body.slds-card__body_inner {
+/* .slds-card__body.slds-card__body_inner {
     max-height: 40vh;
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;
     display: flex;
     flex-direction: column;
-}
+} */
 
 /* Files content area */
 .files-content-area {

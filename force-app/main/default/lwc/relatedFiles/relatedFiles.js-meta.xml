@@ -18,16 +18,14 @@
             <property name="listTitle" type="String" label="List Title" 
                       description="Display name for the file list. Leave blank for 'Files'."
                       default=""/>
-            
+
+            <property name="relatedListIcon" type="String" label="Related List Icon"
+            description="SLDS icon name for the related list (e.g., 'standard:contact', 'standard:opportunity', 'utility:activity'). Leave blank for no icon."/>
+
             <property name="initialLoadAmount" type="Integer" label="Initial Files to Show" 
                       description="Number of files to display initially before showing View More. Default is 6."
                       default="6"/>
             
-            <!-- Styling Settings -->
-            <property name="titleTextStyle" type="String" label="Title Text Style" 
-                      description="Typography style for the list title"
-                      datasource="Heading 1,Heading 2,Heading 3,Heading 4,Heading 5,Heading 6,Paragraph 1,Paragraph 2"
-                      default="Heading 3"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

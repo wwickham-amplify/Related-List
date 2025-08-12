@@ -19,11 +19,6 @@
                       description="The title displayed in the component header."
                       default="Case Articles"/>
                       
-            <property name="titleLevel" type="String" label="Title Typography Level" 
-                      description="LWR typography level for the title."
-                      default="Heading 3"
-                      datasource="Heading 1,Heading 2,Heading 3,Heading 4,Heading 5,Heading 6,Paragraph 1,Paragraph 2"/>
-                      
             <property name="iconName" type="String" label="Icon Name" 
                       description="SLDS icon name (e.g., standard:knowledge, custom:custom1, utility:knowledge_base)."
                       default="standard:knowledge"/>

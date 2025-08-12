@@ -1,11 +1,40 @@
-/* Case Articles Component - Clean List Style */
-
-/* Use CSS custom properties for LWR theming compatibility */
-:host {
-    --slds-c-card-color-background: var(--dxp-g-root-color-background-alt);
+/* Component container with border and proper spacing */
+.component-container {
+    background-color: var(--dxp-c-record-list-table-body-background-color, white);
+    border: var(--dxp-c-record-list-header-border-width, 1px) solid var(--dxp-c-record-list-header-border-color, #E5E5E5);
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+    margin: 0;
+    overflow: hidden; /* Ensures header background goes to edges */
 }
 
-/* Simple list styling - no hover effects */
+/* Header section with gray background */
+.header-section {
+    background-color: rgb(242, 242, 242);
+    margin: 0;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0;
+}
+
+/* Header title using site base font */
+.header-title {
+    font-family: var(--dxp-s-base-font-family, var(--dxp-s-body-font-family));
+    font-size: var(--dxp-s-base-font-size, var(--dxp-s-body-font-size));
+    margin: 0;
+    padding: 0;
+}
+
+/* Content area padding (everything except header) */
+.content-area {
+    padding: 0.75rem 1rem;
+}
+
+/* Enhanced empty state - shows header but minimal content */
+.empty-state-enhanced {
+    /* No content needed - just header will show */
+}
+
+/* Simple list styling - consistent with RelatedFiles layout */
 .slds-list__item {
     border-top: 1px solid #e5e5e5;
     margin-left: 0;
@@ -16,17 +45,9 @@
     border-top: none;
 }
 
-.slds-p-around_medium {
-    padding-top: 0;
-}
-
-.slds-media__figure {
-    margin-right: 0;
-}
-
 /* Article link styling using LWR design tokens */
 .article-link {
-font-size: var(--dxp-s-body-font-size);
+    font-size: var(--dxp-s-body-font-size);
     font-family: var(--dxp-s-body-font-family);
     font-style: var(--dxp-s-body-font-style);
     text-transform: var(--dxp-s-body-text-transform);
@@ -34,6 +55,8 @@ font-size: var(--dxp-s-body-font-size);
     letter-spacing: var(--dxp-s-body-letter-spacing);  
     text-decoration: var(--dxp-g-link-text-decoration);
     color: var(--dxp-g-link-color-text);
+    display: block;
+    padding: 0.5rem 0;
 }
 
 .article-link:hover {
@@ -51,6 +74,34 @@ font-size: var(--dxp-s-body-font-size);
     --sds-c-icon-color-foreground-default: #b0adab;
 }
 
+/* Enhanced button styling for LWR */
+lightning-button {
+    --slds-c-button-neutral-color-border: #d8dde6;
+    --slds-c-button-neutral-color-border-hover: #1589ee;
+}
+
+/* Loading states with better animations */
+lightning-spinner {
+    --slds-c-spinner-color-background: #1589ee;
+    --slds-c-spinner-color-foreground: #1589ee;
+}
+
+/* Animation for smooth state transitions */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.slds-list__item {
+    animation: fadeIn 0.3s ease-out;
+}
+
 /* Responsive typography using standard SLDS classes */
 @media (max-width: 768px) {
     .slds-text-heading_large {
@@ -65,22 +116,13 @@ font-size: var(--dxp-s-body-font-size);
         font-size: 0.875rem;
     }
     
-    /* Reduce margin on mobile */
-    .slds-list__item {
-        margin-left: calc(24px + 0.5rem);
+    .content-area {
+        padding: 0.5rem;
     }
-}
-
-/* Loading states with better animations */
-lightning-spinner {
-    --slds-c-spinner-color-background: #1589ee;
-    --slds-c-spinner-color-foreground: #1589ee;
-}
-
-/* Enhanced button styling for LWR */
-lightning-button {
-    --slds-c-button-neutral-color-border: #d8dde6;
-    --slds-c-button-neutral-color-border-hover: #1589ee;
+    
+    .header-section {
+        padding: 0.5rem;
+    }
 }
 
 /* Ensure proper contrast in all themes */

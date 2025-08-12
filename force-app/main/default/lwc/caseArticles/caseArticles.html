@@ -1,92 +1,69 @@
 <template>
-    <lightning-card>
-        <!-- Header with configurable icon and typography -->
-        <div slot="title" class="slds-media slds-media_center">
-            <div class="slds-media__figure" lwc:if={iconName}>
-                <lightning-icon 
-                    icon-name={iconName} 
-                    size="medium"
-                    alternative-text={componentTitle}
-                    class="slds-m-right_small">
-                </lightning-icon>
-            </div>
-            <div class="slds-media__body">
-                <span class={titleClass}>{listTitle}</span>
-            </div>
-        </div>
-        
-        <!-- Header Actions -->
-        <div slot="actions">
-            <lightning-button-icon 
-                icon-name="utility:refresh" 
-                alternative-text="Refresh"
-                title="Refresh"
-                onclick={handleRefresh}>
-            </lightning-button-icon>
-        </div>
-
-        <!-- Card Body using native lightning-card patterns -->
-        <div class="slds-p-around_medium">
-            <!-- Loading State using SLDS illustrations -->
-            <template lwc:if={isLoading}>
-                <lightning-layout horizontal-align="center" class="slds-p-vertical_large">
-                    <lightning-layout-item>
-                        <lightning-spinner 
-                            alternative-text="Loading articles..." 
-                            size="medium">
-                        </lightning-spinner>
-                    </lightning-layout-item>
-                </lightning-layout>
-            </template>
-
-            <!-- Error State using SLDS illustrations -->
-            <template lwc:if={hasError}>
-                <lightning-layout horizontal-align="center" class="slds-p-vertical_large">
-                    <lightning-layout-item>
-                        <div class="slds-text-align_center">
-                            <lightning-icon 
-                                icon-name="utility:error" 
-                                size="large" 
-                                variant="error"
-                                class="slds-m-bottom_medium">
-                            </lightning-icon>
-                            <h3 class="slds-text-heading_medium slds-m-bottom_small">
-                                Error Loading Articles
-                            </h3>
-                            <p class="slds-text-body_regular slds-text-color_weak slds-m-bottom_medium">
-                                {errorMessage}
-                            </p>
-                            <lightning-button
-                                label="Retry"
-                                variant="neutral"
-                                onclick={handleRefresh}>
-                            </lightning-button>
-                        </div>
-                    </lightning-layout-item>
-                </lightning-layout>
-            </template>
-
-            <!-- Empty State using SLDS illustrations -->
-            <template lwc:if={hasNoArticles}>
-                <lightning-layout horizontal-align="center" class="slds-p-vertical_large">
-                    <lightning-layout-item>
-                        <div class="slds-text-align_center">
+    <div class="component-container">
+        <!-- Header Section with Gray Background -->
+        <div class="header-section">
+            <div class="slds-grid slds-grid_align-spread">
+                <div class="slds-col">
+                    <h3 class="slds-grid slds-grid_vertical-align-center header-title">
+                        <template if:true={shouldShowIcon}>
                             <lightning-icon 
                                 icon-name={iconName} 
-                                size="large" 
-                                variant="inverse"
-                                class="slds-m-bottom_medium slds-icon-text-light">
+                                size="small" 
+                                alternative-text="Related List Icon"
+                                class="slds-m-right_x-small">
                             </lightning-icon>
-                            <h3 class="slds-text-heading_medium slds-m-bottom_small">
-                                No Articles Found
-                            </h3>
+                        </template>
+                        <span>
+                            {listTitle}
+                        </span>
+                    </h3>
+                </div>
+                
+                <!-- Action Buttons on Right -->
+                <div class="slds-col slds-no-flex">
+                    <div class="slds-grid slds-grid_vertical-align-center slds-wrap">
+                        <!-- Refresh Button -->
+                        <div class="slds-col">
+                            <lightning-button-icon
+                                icon-name="utility:refresh"
+                                alternative-text="Refresh"
+                                title="Refresh"
+                                onclick={handleRefresh}
+                                class="slds-m-right_x-small">
+                            </lightning-button-icon>
                         </div>
-                    </lightning-layout-item>
-                </lightning-layout>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <!-- Loading State -->
+            <template if:true={isLoading}>
+                <div class="slds-align_absolute-center slds-p-vertical_large">
+                    <lightning-spinner 
+                        alternative-text="Loading articles..." 
+                        size="medium">
+                    </lightning-spinner>
+                </div>
             </template>
 
-            <!-- Articles List - Simple unformatted list -->
-            <template lwc:if={hasArticles}>
+            <!-- Error State -->
+            <template if:true={hasError}>
+                <div class="slds-notify slds-notify_alert slds-theme_error" role="alert">
+                    <span class="slds-assistive-text">error</span>
+                    <h2>{errorMessage}</h2>
+                    <lightning-button
+                        label="Retry"
+                        variant="neutral"
+                        onclick={handleRefresh}
+                        class="slds-m-top_small">
+                    </lightning-button>
+                </div>
+            </template>
+
+            <!-- Articles List -->
+            <template if:true={hasArticles}>
                 <ul class="slds-list_vertical slds-has-dividers_top-space">
                     <template for:each={displayedArticles} for:item="article">
                         <li key={article.id} class="slds-list__item slds-p-vertical_small">
@@ -103,18 +80,23 @@
                 </ul>
 
                 <!-- Load More Button -->
-                <template lwc:if={hasMoreToLoad}>
-                    <lightning-layout horizontal-align="center" class="slds-m-top_medium">
-                        <lightning-layout-item>
-                            <lightning-button
-                                label={loadMoreButtonLabel}
-                                variant="neutral"
-                                onclick={handleLoadMore}>
-                            </lightning-button>
-                        </lightning-layout-item>
-                    </lightning-layout>
+                <template if:true={hasMoreToLoad}>
+                    <div class="slds-align_absolute-center slds-m-top_medium">
+                        <lightning-button
+                            label={loadMoreButtonLabel}
+                            variant="base"
+                            onclick={handleLoadMore}>
+                        </lightning-button>
+                    </div>
                 </template>
             </template>
+
+            <!-- Empty State -->
+            <template if:true={hasNoArticles}>
+                <div class="empty-state-enhanced">
+                    <!-- No content shown for empty state -->
+                </div>
+            </template>
         </div>
-    </lightning-card>
+    </div>
 </template>
