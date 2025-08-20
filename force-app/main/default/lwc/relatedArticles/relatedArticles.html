@@ -1,0 +1,81 @@
+<template>
+    <div class="component-container">
+        <!-- Header Section with Gray Background -->
+        <div class="header-section">
+            <div class="slds-grid slds-grid_align-spread">
+                <div class="slds-col">
+                    <h3 class="slds-grid slds-grid_vertical-align-center header-title">
+                        <!--<template if:true={shouldShowIcon}>
+                            <lightning-icon 
+                                icon-name={iconName} 
+                                size="small" 
+                                alternative-text="Related List Icon"
+                                class="slds-m-right_x-small">
+                            </lightning-icon>
+                        </template>-->
+                        <span>
+                            {listTitle}
+                        </span>
+                    </h3>
+                </div>
+                
+                <!-- Action Buttons on Right -->
+                <!--<div class="slds-col slds-no-flex">
+                    <div class="slds-grid slds-grid_vertical-align-center slds-wrap">
+                        <!-- Refresh Button -->
+                        <!--<div class="slds-col">
+                            <lightning-button-icon
+                                icon-name="utility:refresh"
+                                alternative-text="Refresh"
+                                title="Refresh"
+                                onclick={handleRefresh}
+                                class="slds-m-right_x-small">
+                            </lightning-button-icon>
+                        </div>
+                    </div>
+                </div>-->
+            </div>
+        </div>
+
+        <div class="content-area">
+            <!-- Articles List -->
+            <template if:true={hasArticles}>
+                <ul class="slds-list_vertical slds-has-dividers_top-space">
+                    <template for:each={displayedArticles} for:item="article">
+                        <li key={article.id} class="slds-list__item slds-p-vertical_small">
+                            <a href={article.articleUrl} 
+                               class="article-link"
+                               data-article-id={article.id}
+                               data-url-name={article.urlName}
+                               onclick={handleRecordNavigation}
+                               title={article.title}>
+                                {article.title}
+                            </a>
+                        </li>
+                    </template>
+                </ul>
+            </template>
+
+            <!-- Error State -->
+            <template if:true={hasError}>
+                <div class="slds-notify slds-notify_alert slds-theme_error" role="alert">
+                    <span class="slds-assistive-text">error</span>
+                    <h2>{errorMessage}</h2>
+                    <lightning-button
+                        label="Retry"
+                        variant="neutral"
+                        onclick={handleRefresh}
+                        class="slds-m-top_small">
+                    </lightning-button>
+                </div>
+            </template>
+
+            <!-- Empty State -->
+            <template if:true={hasNoArticles}>
+                <div class="empty-state-enhanced">
+                    <!-- No content shown for empty state -->
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,131 @@
+/* Component container with border and proper spacing */
+.component-container {
+    background-color: var(--dxp-c-record-list-table-body-background-color, white);
+    border: var(--dxp-c-record-list-header-border-width, 1px) solid var(--dxp-c-record-list-header-border-color, #E5E5E5);
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+    margin: 0;
+    overflow: hidden; /* Ensures header background goes to edges */
+}
+
+/* Header section with gray background */
+.header-section {
+    background-color: rgb(242, 242, 242);
+    margin: 0;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0;
+}
+
+/* Header title using site base font */
+.header-title {
+    font-family: var(--dxp-s-base-font-family, var(--dxp-s-body-font-family));
+    font-size: var(--dxp-s-base-font-size, var(--dxp-s-body-font-size));
+    margin: 0;
+    padding: 0;
+}
+
+/* Content area padding (everything except header) */
+.content-area {
+    padding: 0.75rem 1rem;
+}
+
+/* Enhanced empty state - shows header but minimal content */
+.empty-state-enhanced {
+    /* No content needed - just header will show */
+}
+
+/* Simple list styling - consistent with RelatedFiles layout */
+.slds-list__item {
+    border-top: 1px solid #e5e5e5;
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.slds-list__item:first-child {
+    border-top: none;
+}
+
+/* Article link styling using LWR design tokens */
+.article-link {
+    font-size: var(--dxp-s-body-font-size);
+    font-family: var(--dxp-s-body-font-family);
+    font-style: var(--dxp-s-body-font-style);
+    text-transform: var(--dxp-s-body-text-transform);
+    line-height: var(--dxp-s-body-line-height);
+    letter-spacing: var(--dxp-s-body-letter-spacing);  
+    text-decoration: var(--dxp-g-link-text-decoration);
+    color: var(--dxp-g-link-color-text);
+    display: block;
+    padding: 0.5rem 0;
+}
+
+.article-link:hover {
+    text-decoration: var(--dxp-g-link-text-decoration-hover);
+    color: var(--dxp-g-link-color-text-hover);
+}
+
+.article-link:focus {
+    outline: 2px solid var(--dxp-g-link-color-border-focus);
+    outline-offset: 2px;
+}
+
+/* LWR-compatible icon styling */
+.slds-icon-text-light lightning-icon {
+    --sds-c-icon-color-foreground-default: #b0adab;
+}
+
+/* Enhanced button styling for LWR */
+lightning-button {
+    --slds-c-button-neutral-color-border: #d8dde6;
+    --slds-c-button-neutral-color-border-hover: #1589ee;
+}
+
+/* Loading states with better animations */
+lightning-spinner {
+    --slds-c-spinner-color-background: #1589ee;
+    --slds-c-spinner-color-foreground: #1589ee;
+}
+
+/* Animation for smooth state transitions */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.slds-list__item {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Responsive typography using standard SLDS classes */
+@media (max-width: 768px) {
+    .slds-text-heading_large {
+        font-size: 1.125rem;
+    }
+    
+    .slds-text-heading_medium {
+        font-size: 1rem;
+    }
+    
+    .slds-text-heading_small {
+        font-size: 0.875rem;
+    }
+    
+    .content-area {
+        padding: 0.5rem;
+    }
+    
+    .header-section {
+        padding: 0.5rem;
+    }
+}
+
+/* Ensure proper contrast in all themes */
+.slds-text-color_weak {
+    color: #706e6b;
+}
