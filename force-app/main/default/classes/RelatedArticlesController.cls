@@ -32,16 +32,18 @@ public with sharing class RelatedArticlesController {
                 return articles;
             }
             
-            Knowledge__DataCategorySelection dataCategory = [SELECT DataCategoryName, ParentId FROM Knowledge__DataCategorySelection WHERE ParentId = :recordId LIMIT 1];
-            if (dataCategory.isEmpty()) {
-                return articles;
-            }
+            Knowledge__DataCategorySelection dataCategory = [SELECT DataCategoryName, DataCategoryGroupName, ParentId FROM Knowledge__DataCategorySelection WHERE ParentId = :recordId LIMIT 1];
 
             String dataCategoryName = dataCategory.DataCategoryName;
+
+            String dataCategoryGroupName = dataCategory.DataCategoryGroupName;
             
             String query = 'SELECT Id, Title, UrlName ' +
               'FROM KnowledgeArticleVersion ' +
-              'WITH DATA CATEGORY ' + 'Products__c' + ' AT ' + dataCategoryName;
+              'WHERE Id != \'' + recordId + '\' ' +
+              'AND LastPublishedDate >= LAST_N_MONTHS:18 ' +
+              'WITH DATA CATEGORY ' + dataCategoryGroupName + '__c' + ' AT ' + dataCategoryName + '__c ' +
+              'ORDER BY ArticleCaseAttachCount DESC, LastPublishedDate DESC LIMIT 6';
 
             List<KnowledgeArticleVersion> relatedArticles = Database.query(query);
                         

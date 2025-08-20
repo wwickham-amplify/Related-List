@@ -15,7 +15,7 @@ export default class RelatedArticles extends LightningElement {
     error = null;
 
     // Wire method to get related articles
-    @wire(getArticles, { recordId: '$recordId' })
+    @wire(getRelatedArticles, { recordId: '$recordId' })
     wiredArticles({ error, data }) {
         this.isLoading = false;
         if (data) {

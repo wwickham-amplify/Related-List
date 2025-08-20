@@ -10,7 +10,8 @@
         <target>lightning__RecordPage</target>
     </targets>
     <targetConfigs>
-        <targetConfig targets="lightningCommunity__Default,lightning__RecordPage">            
+        <targetConfig targets="lightningCommunity__Default,lightning__RecordPage">
+            <property name="recordId" type="String" label="Record ID" default="{!recordId}" description="Knowledge Article Record ID"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
