@@ -41,7 +41,7 @@ public with sharing class RelatedArticlesController {
             String query = 'SELECT Id, Title, UrlName ' +
               'FROM KnowledgeArticleVersion ' +
               'WHERE Id != \'' + recordId + '\' ' +
-              'AND LastPublishedDate >= LAST_N_MONTHS:18 ' +
+              'AND LastPublishedDate >= LAST_N_MONTHS:18 AND PublishStatus = \'Online\' ' +
               'WITH DATA CATEGORY ' + dataCategoryGroupName + '__c' + ' AT ' + dataCategoryName + '__c ' +
               'ORDER BY ArticleCaseAttachCount DESC, LastPublishedDate DESC LIMIT 6';
 
