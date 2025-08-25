@@ -27,19 +27,11 @@ public with sharing class RelatedArticlesController {
                 return articles;
             }
             
-            List<Knowledge__DataCategorySelection> dataCategories = [SELECT DataCategoryName, DataCategoryGroupName, ParentId FROM Knowledge__DataCategorySelection WHERE ParentId = :recordId];
+            Knowledge__DataCategorySelection dataCategory = [SELECT DataCategoryName, DataCategoryGroupName, ParentId FROM Knowledge__DataCategorySelection WHERE ParentId = :recordId LIMIT 1];
 
-            List<Knowledge__DataCategorySelection> filteredCategories = new List<Knowledge__DataCategorySelection>();
+            String dataCategoryName = dataCategory.DataCategoryName;
 
-            for(Knowledge__DataCategorySelection category : dataCategories) {
-                if(category.DataCategoryGroupName != 'Audience') {
-                    filteredCategories.add(category);
-                }
-            }
-
-            String dataCategoryName = filteredCategories[0].DataCategoryName;
-
-            String dataCategoryGroupName = filteredCategories[0].DataCategoryGroupName;
+            String dataCategoryGroupName = dataCategory.DataCategoryGroupName;
             
             String query = 'SELECT Id, Title, UrlName ' +
                 'FROM KnowledgeArticleVersion ' +
