@@ -1,9 +1,9 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import getRelatedArticles from '@salesforce/apex/RelatedArticlesController.getArticles';
+import getRelatedArticles from '@salesforce/apex/RelatedArticlesController.getRelatedArticles';
 
 export default class RelatedArticles extends LightningElement {
-    @api recordId; // Current article record ID
+    @api recordId; // Knowledge Article Version Id
     componentTitle = 'Related Articles';
     //@api iconName = ''; // Static SLDS icon name (e.g., 'standard:knowledge')
     //@api initialLoadCount = 3; // Number of articles to show initially
@@ -15,16 +15,19 @@ export default class RelatedArticles extends LightningElement {
     error = null;
 
     // Wire method to get related articles
-    @wire(getRelatedArticles, { recordId: '$recordId' })
+    @wire(getRelatedArticles, { currentArticleId: '$recordId' })
     wiredArticles({ error, data }) {
         this.isLoading = false;
         if (data) {
-            
+            console.log("Data: " + data);
             this.tempArticlesList = data.map(article => ({
                 ...article,
                 articleUrl: this.constructArticleUrl(article.urlName) || '#'
             }));
             this.displayedArticles = this.tempArticlesList.slice(0, this.initialLoadCount);
+            this.displayedArticles.forEach(article => {
+                console.log(article.title + ' ' + article.articleId);
+            });
             this.error = null;
         } else if (error) {
             this.error = error;
