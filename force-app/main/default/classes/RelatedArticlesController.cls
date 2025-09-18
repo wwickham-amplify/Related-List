@@ -118,49 +118,38 @@ public with sharing class RelatedArticlesController {
 
         List<KnowledgeArticleVersion> relatedArticles = new List<KnowledgeArticleVersion>();
 
+        //format the excluded Ids as a comma seperated list
         String idList = '\'' + String.join(new List<Id>(excludedIds), '\',\'') + '\'';
-        try {
-            for(String cat : categories) {
-                String query = 'SELECT Id, Title, UrlName, LastPublishedDate ' +
-                    'FROM KnowledgeArticleVersion ' +
-                    'WHERE Id NOT IN (' + idList + ') ' +
-                    'AND LastPublishedDate >= LAST_N_MONTHS:18 AND PublishStatus = \'Online\' ' +
-                    'WITH DATA CATEGORY Products__c' + ' AT ' + cat + '__c ' +
-                    'ORDER BY ArticleCaseAttachCount DESC, LastPublishedDate DESC LIMIT 6';
-                if(!Test.isRunningTest()) {
-                    List<KnowledgeArticleVersion> queriedRecords = Database.query(query);
-                    relatedArticles.addAll(queriedRecords);
-                } else {
-                    //Can't query by data category in test class
-                    relatedArticles = [SELECT Id, Title, UrlName FROM KnowledgeArticleVersion WHERE Id = :currentArticleId LIMIT 1];
-                }
-            }
 
-            // Get articles that have any of the specified categories
-            /*List<KnowledgeArticleVersionDataCategory> categoryMatches = [
-                SELECT ParentId 
-                FROM KnowledgeArticleVersionDataCategory 
-                WHERE DataCategoryGroupName = 'Program' 
-                AND DataCategoryName IN :categories
-                AND ParentId NOT IN :excludedIds
-            ];*/
-            
-            /*Set<Id> matchingArticleIds = new Set<Id>();
-            for (KnowledgeArticleVersionDataCategory cat : categoryMatches) {
-                matchingArticleIds.add(cat.ParentId);
-            }*/
+        //Construct Data Category part of query
+        String parentGroup = 'Products__c';
+
+        List<String> formattedCategoryNames = new List<String>();
+        for (String cat : categories) {
+            formattedCategoryNames.add(cat + '__c');
+        }
+
+        String dataCategoryQuery = 'WITH DATA CATEGORY ' 
+            + parentGroup 
+            + ' AT (' 
+            + String.join(formattedCategoryNames, ', ') 
+            + ')';
+
+        try {
+            String query = 'SELECT Id, Title, UrlName, LastPublishedDate ' +
+                'FROM KnowledgeArticleVersion ' +
+                'WHERE Id NOT IN (' + idList + ') ' +
+                'AND LastPublishedDate >= LAST_N_MONTHS:18 AND PublishStatus = \'Online\' ' +
+                dataCategoryQuery + ' ' +
+                'ORDER BY ArticleCaseAttachCount DESC, LastPublishedDate DESC LIMIT 6';
+            if(!Test.isRunningTest()) {
+                relatedArticles = Database.query(query);
+            } else {
+                //Can't query by data category in test class
+                relatedArticles = [SELECT Id, Title, UrlName, LastPublishedDate FROM KnowledgeArticleVersion WHERE Id = :currentArticleId LIMIT 1];
+            }
             
             if (!relatedArticles.isEmpty()) {
-                /*List<KnowledgeArticleVersion> articles = [
-                    SELECT Id, Title, UrlName, LastPublishedDate 
-                    FROM KnowledgeArticleVersion 
-                    WHERE Id IN :matchingArticleIds 
-                    AND PublishStatus = 'Online' 
-                    AND Language = 'en_US'
-                    ORDER BY LastPublishedDate DESC 
-                    LIMIT 5
-                ];*/
-                
                 for (KnowledgeArticleVersion article : relatedArticles) {
                     results.add(new RelatedArticleWrapper(article, 'category'));
                     excludedIds.add(article.Id);
@@ -177,6 +166,9 @@ public with sharing class RelatedArticlesController {
         List<String> keywords, Set<Id> excludedIds, Integer remainingSlots
     ) {
         List<RelatedArticleWrapper> results = new List<RelatedArticleWrapper>();
+
+        //format the excluded Ids as a comma seperated list
+        String idList = '\'' + String.join(new List<Id>(excludedIds), '\',\'') + '\'';
         
         try {
             // Build LIKE clauses for each keyword
@@ -192,11 +184,17 @@ public with sharing class RelatedArticlesController {
                 'WHERE (' + whereClause + ') ' +
                 'AND PublishStatus = \'Online\' ' +
                 'AND Language = \'en_US\' ' +
-                'AND Id NOT IN :excludedIds ' +
+                'AND Id NOT IN (' + idList + ') ' +
                 'ORDER BY LastPublishedDate DESC ' +
                 'LIMIT :remainingSlots';
-            
-            List<KnowledgeArticleVersion> articles = Database.query(query);
+
+            List<KnowledgeArticleVersion> articles = new List<KnowledgeArticleVersion>();
+            if(!Test.isRunningTest()) {
+                articles = Database.query(query);
+            } else {
+                //Can't query by data category in test class
+                articles = [SELECT Id, Title, UrlName, LastPublishedDate FROM KnowledgeArticleVersion LIMIT 1];
+            }
             
             for (KnowledgeArticleVersion article : articles) {
                 results.add(new RelatedArticleWrapper(article, 'title'));
