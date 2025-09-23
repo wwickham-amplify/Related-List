@@ -2,9 +2,9 @@
     <div class="component-container">
         <!-- Header Section with Gray Background -->
         <div class="header-section">
-            <div class="slds-grid slds-grid_align-spread">
+            <!--<div class="slds-grid slds-grid_align-spread">
                 <div class="slds-col">
-                    <h3 class="slds-grid slds-grid_vertical-align-center header-title">
+                    <h3 class="slds-grid slds-grid_vertical-align-center header-title">-->
                         <!--<template if:true={shouldShowIcon}>
                             <lightning-icon 
                                 icon-name={iconName} 
@@ -13,11 +13,11 @@
                                 class="slds-m-right_x-small">
                             </lightning-icon>
                         </template>-->
-                        <span>
+                        <span class="header-title">
                             {listTitle}
                         </span>
-                    </h3>
-                </div>
+                    <!--</h3>
+                </div>-->
                 
                 <!-- Action Buttons on Right -->
                 <!--<div class="slds-col slds-no-flex">
@@ -34,22 +34,23 @@
                         </div>
                     </div>
                 </div>-->
-            </div>
+            <!--</div>-->
         </div>
 
         <div class="content-area">
             <!-- Articles List -->
             <template if:true={hasArticles}>
-                <ul class="slds-list_vertical slds-has-dividers_top-space">
+                <ul class="slds-list_vertical">
                     <template for:each={displayedArticles} for:item="article">
-                        <li key={article.id} class="slds-list__item slds-p-vertical_small">
+                        <li key={article.id} class="slds-list__item">
                             <a href={article.articleUrl} 
-                               class="article-link"
+                               class="article-link align-items"
                                data-article-id={article.id}
                                data-url-name={article.urlName}
                                onclick={handleRecordNavigation}
                                title={article.title}>
                                 {article.title}
+                                <span class="arrow"></span>
                             </a>
                         </li>
                     </template>
