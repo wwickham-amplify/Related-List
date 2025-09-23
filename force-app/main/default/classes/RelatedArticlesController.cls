@@ -29,11 +29,11 @@ public with sharing class RelatedArticlesController {
                 return relatedArticles;
             }
             List<String> currentArticleCategories = getArticleCategories(currentArticleId);
-            
+            System.debug('Categories: ' + currentArticleCategories);
             if (!currentArticleCategories.isEmpty()) {
                 // Scenario 1: Article has Program categories
-                relatedArticles = findArticlesByCategories(currentArticleCategories, excludedArticleIds, currentArticleId);
-                
+                relatedArticles = findArticlesByCategories(currentArticleCategories, excludedArticleIds, currentArticleId, 'Products');
+                System.debug('Related Articles: ' + relatedArticles);
                 // If we need more articles, supplement with title-based matches
                 if (relatedArticles.size() < 5) {
                     List<RelatedArticleWrapper> titleMatches = findArticlesByTitleKeywords(
@@ -45,11 +45,12 @@ public with sharing class RelatedArticlesController {
                 // Scenario 2: Article has no Program categories - check title for keywords
                 List<String> networkCategories = getNetworkDataCategories();
                 String matchedCategory = findCategoryInTitle(currentArticle.Title, networkCategories);
-                
+                System.debug('Matched Category: ' + matchedCategory);
                 if (String.isNotBlank(matchedCategory)) {
                     // Treat as if article had this category
                     List<String> impliedCategories = new List<String>{matchedCategory};
-                    relatedArticles = findArticlesByCategories(impliedCategories, excludedArticleIds, currentArticleId);
+                    String parentCategory = findParentCategory(matchedCategory);
+                    relatedArticles = findArticlesByCategories(impliedCategories, excludedArticleIds, currentArticleId, parentCategory);
                     
                     // Supplement with title matches if needed
                     if (relatedArticles.size() < 5) {
@@ -61,7 +62,8 @@ public with sharing class RelatedArticlesController {
                 }
                 // If no matches found, return empty list (component will show "No related articles")
             }
-            
+            System.debug('# Related Articles: ' + relatedArticles.size());
+            System.debug('Related Articles: ' + relatedArticles);
             return relatedArticles;
             
         } catch (Exception e) {
@@ -112,7 +114,7 @@ public with sharing class RelatedArticlesController {
     }
     
     private static List<RelatedArticleWrapper> findArticlesByCategories(
-        List<String> categories, Set<Id> excludedIds, Id currentArticleId
+        List<String> categories, Set<Id> excludedIds, Id currentArticleId, String parentCategory
     ) {
         List<RelatedArticleWrapper> results = new List<RelatedArticleWrapper>();
 
@@ -122,7 +124,7 @@ public with sharing class RelatedArticlesController {
         String idList = '\'' + String.join(new List<Id>(excludedIds), '\',\'') + '\'';
 
         //Construct Data Category part of query
-        String parentGroup = 'Products__c';
+        String parentGroup = parentCategory + '__c';
 
         List<String> formattedCategoryNames = new List<String>();
         for (String cat : categories) {
@@ -236,11 +238,34 @@ public with sharing class RelatedArticlesController {
         
         // Check for exact matches first (longer phrases)
         for (String category : categories) {
-            if (titleLower.contains(category.toLowerCase())) {
-                return category;
+            List<String> categoryWords = category.split('_');
+            for (String word : categoryWords) {
+                if (String.isNotBlank(word) && word.length() > 1 && word.toLowerCase() != 'amplify' && word.toLowerCase() != 'and' && titleLower.contains(word.toLowerCase())) {
+                    return category;
+                }
             }
         }
         
         return null;
+    }
+
+    private static String findParentCategory(String category) {
+        String parentCategory;
+        
+        try {
+            NetworkDataCategory networkCategory = [
+                SELECT DataCategoryGroupName 
+                FROM NetworkDataCategory 
+                WHERE DataCategoryName = :category
+                LIMIT 1
+            ];
+            
+            parentCategory = networkCategory.DataCategoryGroupName;
+        } catch (QueryException e) {
+            System.debug('Error querying NetworkDataCategory: ' + e.getMessage());
+            // Fallback to empty list if query fails
+        }
+        
+        return parentCategory;
     }
 }
