@@ -240,7 +240,13 @@ public with sharing class RelatedArticlesController {
         for (String category : categories) {
             List<String> categoryWords = category.split('_');
             for (String word : categoryWords) {
-                if (String.isNotBlank(word) && word.length() > 1 && word.toLowerCase() != 'amplify' && word.toLowerCase() != 'and' && titleLower.contains(word.toLowerCase())) {
+                if(word == '3E') {
+                    word = 'CKLA 3';
+                }
+                if(word == '2E') {
+                    word = 'CKLA 2';
+                }
+                if (String.isNotBlank(word) && word.length() > 1 && word.toLowerCase() != 'amplify' && word.toLowerCase() != 'and' && word.toLowerCase() != 'ckla' && titleLower.contains(word.toLowerCase())) {
                     return category;
                 }
             }
