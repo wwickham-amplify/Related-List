@@ -58,14 +58,29 @@
                             </div>
                         </div>
 
-                        <div class="slds-form-element slds-form-element_stacked">
-                            <span class="slds-form-element__label">Body</span>
-                            <div class="slds-form-element__control slds-grid">
-                                <div class="slds-grow">
-                                    <div class="slds-form-element__static">{emailData.TextBody}</div>
+                        <template if:true={emailData.HtmlBody}>
+                            <div class="slds-form-element slds-form-element_stacked">
+                                <span class="slds-form-element__label">HTML Body</span>
+                                <div class="slds-form-element__control slds-grid">
+                                    <div class="slds-grow">
+                                        <div class="slds-form-element__static">
+                                            <div class="html-body-container" lwc:dom="manual" data-html-container></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </template>
+
+                        <template if:false={emailData.HtmlBody}>
+                            <div class="slds-form-element slds-form-element_stacked">
+                                <span class="slds-form-element__label">Text Body</span>
+                                <div class="slds-form-element__control slds-grid">
+                                    <div class="slds-grow">
+                                        <div class="slds-form-element__static">{emailData.TextBody}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
                     
                     </div>
                 </template>
