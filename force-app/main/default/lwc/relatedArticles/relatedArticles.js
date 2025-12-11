@@ -94,15 +94,15 @@ export default class RelatedArticles extends LightningElement {
             console.log('No path parts found, using origin only');
             return url.origin;
         } else {
-            // Custom domain - might still have a path
-            const pathParts = url.pathname.split('/').filter(part => part !== '');
+            // Custom domain - ignore subpaths for Prod, just use custom domain
+            /*const pathParts = url.pathname.split('/').filter(part => part !== '');
             if (pathParts.length > 0) {
                 // Check if we're in a subpath (like /portal/)
                 const potentialSitePath = pathParts[0];
                 const siteBaseUrl = `${url.origin}/${potentialSitePath}`;
                 console.log('Custom domain with path detected:', siteBaseUrl);
                 return siteBaseUrl;
-            }
+            }*/
             
             console.log('Custom domain root detected:', url.origin);
             return url.origin;

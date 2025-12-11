@@ -1,0 +1,53 @@
+<template>
+    <div class="slds-card">
+        <div class="slds-card__body slds-card__body_inner">
+            <template if:true={currentRecordId}>
+                <template if:true={eventData}>
+                    <div class="slds-form slds-form_stacked">
+                        <div class="slds-form-element slds-form-element_stacked">
+                            <span class="slds-form-element__label">Subject</span>
+                            <div class="slds-form-element__control slds-grid">
+                                <div class="slds-grow">
+                                    <div class="slds-form-element__static">{displaySubject}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slds-form-element slds-form-element_stacked">
+                            <span class="slds-form-element__label">Related To</span>
+                            <div class="slds-form-element__control slds-grid">
+                                <div class="slds-grow">
+                                    <div class="slds-form-element__static">{relatedToValue}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slds-form-element slds-form-element_stacked">
+                            <span class="slds-form-element__label">Start</span>
+                            <div class="slds-form-element__control slds-grid">
+                                <div class="slds-grow">
+                                    <div class="slds-form-element__static">{formattedStartDateTime}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slds-form-element slds-form-element_stacked">
+                            <span class="slds-form-element__label">End</span>
+                            <div class="slds-form-element__control slds-grid">
+                                <div class="slds-grow">
+                                    <div class="slds-form-element__static">{formattedEndDateTime}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <template if:true={error}>
+                    <div class="slds-text-color_error">Error loading event data</div>
+                </template>
+            </template>
+            <template if:false={currentRecordId}>
+                <div class="slds-text-color_error">No Event record ID provided</div>
+            </template>
+        </div>
+    </div>
+</template>

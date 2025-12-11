@@ -1,157 +1,416 @@
-/* relatedList.css - Updated to use DXP styling tokens */
+/* ============================================
+   BASE COMPONENT STRUCTURE
+   ============================================ */
 
-/* Card styling inheriting DXP variables */
-.slds-card {
+/* Main container with border and shadow */
+.component-container {
     background-color: var(--dxp-c-record-list-table-body-background-color, white);
     border: var(--dxp-c-record-list-header-border-width, 1px) solid var(--dxp-c-record-list-header-border-color, #E5E5E5);
     border-radius: 0.25rem;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+    margin: 0;
+    overflow: hidden;
 }
 
-/* Card header styling */
-.slds-card__header {
-    background-color: var(--dxp-c-record-list-header-background-color, initial);
+/* Content area - no default padding */
+.content-area {
+    padding: 0;
 }
 
-/* Card body with height limit and scrolling */
-.slds-card__body.slds-card__body_inner {
-    max-height: 40vh;
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+/* Header with gray background */
+.header-section {
+    background-color: rgb(242, 242, 242);
+    margin: 0;
+    padding: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+.header-section > .slds-grid {
+    width: 100%;
+    padding: 0 .5rem;
+}
+
+/* Header title using site base font */
+.header-title {
+    font-family: var(--dxp-s-base-font-family, var(--dxp-s-body-font-family));
+    font-size: calc(var(--dxp-s-base-font-size)*1.5);
+    margin: 0;
+    padding: 0;
+}
+
+/* Header slot layout */
+.header-slots-row {
+    display: flex;
+    flex: 1 1 100%;
+    width: 100%;
+    justify-content: flex-end;
+}
+
+.header-slots-row .slds-grid {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    justify-items: end;
+    width: auto;
+}
+
+
+/* ============================================
+   DATATABLE
+   ============================================ */
+
+/* Responsive datatable container */
+.responsive-table-container {
+    width: 100%;
+    height: 230px;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+/* Make datatable responsive to container width */
+.responsive-datatable {
+    width: 100%;
+    min-width: 100%;
+}
+
+.responsive-table-container lightning-datatable {
+    width: 100%;
+    height: 100% !important;
+    margin: 0 !important;
+}
+
+.responsive-table-container lightning-datatable .slds-table_header-fixed_container {
+    height: 100% !important;
+    overflow-y: auto !important;
+}
+
+/* Fixed header for list view */
+.responsive-table-container lightning-datatable table thead {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    background-color: #fafaf9 !important;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.responsive-table-container lightning-datatable table thead th {
+    background-color: #fafaf9 !important;
+    border-bottom: 2px solid #e5e5e5 !important;
+}
+
+/* Style file name buttons to look like links */
+.slds-table tbody lightning-button-icon,
+.slds-table tbody button[name="viewFile"] {
+    color: #0176d3;
+    text-decoration: none;
+    font-weight: normal;
+    background: transparent;
+    border: none;
+    padding: 0;
+    text-align: left;
+}
+
+.slds-table tbody button[name="viewFile"]:hover {
+    color: #014486;
+    text-decoration: underline;
+}
+
+
+/* ============================================
+   FIXED HEADER TABLE WITH SCROLLING
+   ============================================ */
+
+.fixed-header-table {
+    height: 230px;
+    overflow: hidden;
+}
+
+.fixed-header-table lightning-datatable {
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+.fixed-header-table lightning-datatable .slds-table_header-fixed_container {
+    height: 100% !important;
+    overflow-y: auto !important;
+}
+
+.fixed-header-table lightning-datatable table thead {
+    position: -webkit-sticky;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    background-color: #fafaf9 !important;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.fixed-header-table lightning-datatable table thead th {
+    background-color: #fafaf9 !important;
+    border-bottom: 2px solid #e5e5e5 !important;
+    padding: 0.75rem !important;
+    font-weight: 600 !important;
+}
+
+.fixed-header-table lightning-datatable table tbody {
+    background-color: white !important;
+}
+
+.fixed-header-table lightning-datatable table tbody tr {
+    border-bottom: 1px solid #e5e5e5 !important;
+}
+
+.fixed-header-table lightning-datatable table tbody tr:hover {
+    background-color: #f4f6f9 !important;
+}
+
+
+/* ============================================
+   CARD LAYOUT (GRID COLUMNS)
+   ============================================ */
+
+.fixed-header-table .card-container {
+    display: grid;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: white;
+    height: 100%;
     overflow-y: auto;
-    overflow-x: hidden;
-    position: relative;
+}
+
+/* Card grid column layouts - responsive with auto-fit */
+.card-grid-columns-1 {
+    grid-template-columns: 1fr;
+}
+
+.card-grid-columns-2 {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-auto-rows: 1fr;
+}
+
+.card-grid-columns-3 {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-auto-rows: 1fr;
+}
+
+.card-grid-columns-4 {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-auto-rows: 1fr;
+}
+
+.record-card {
+    background: transparent;
+    border: none;
+    padding: .25rem 0;
+    box-shadow: none;
+    min-width: 280px;
     display: flex;
     flex-direction: column;
-    background-color: var(--dxp-c-record-list-table-body-background-color, initial);
 }
 
-/* Records content area with scrolling */
-.records-content-area {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-bottom: 1rem;
+.record-card:hover {
+    box-shadow: none;
+    background: transparent;
 }
 
-/* Fixed View More button at bottom */
-.view-more-container {
-    position: sticky;
-    bottom: 0;
-    background: linear-gradient(transparent, var(--dxp-c-record-list-table-body-background-color, white) 30%);
-    padding: 1rem 0 0.5rem 0;
-    margin-top: auto;
-    text-align: center;
-    border-top: var(--dxp-c-record-list-table-row-divider-border-weight, 1px) solid var(--dxp-c-record-list-table-row-divider-border-color, rgba(229, 229, 229, 0.5));
-    backdrop-filter: blur(2px);
+.card-title,
+.card-title-link {
+    display: block;
+    font-weight: 500;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
-/* Custom scrollbar styling */
-.records-content-area::-webkit-scrollbar {
-    width: 8px;
+.card-field {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 0.5rem;
+    font-size: .875rem;
 }
 
-.records-content-area::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
+.card-field:last-child {
+    margin-bottom: 0;
 }
 
-.records-content-area::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
-}
-
-.records-content-area::-webkit-scrollbar-thumb:hover {
-    background: #a1a1a1;
-}
-
-/* Table styling using DXP variables */
-.related-list-table {
+.card-label {
+    font-weight: 500;
     overflow: hidden;
-    border-radius: 0.25rem;
-    border: var(--dxp-c-record-list-table-border-weight, 1px) solid var(--dxp-c-record-list-table-border-color, #E5E5E5);
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.slds-table {
+.card-value {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    max-height: 2.8em; /* 2 lines at 1.4 line-height */
+}
+
+
+/* ============================================
+   ACTION FOOTER
+   ============================================ */
+
+.action-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    gap: 0.5rem;
     background-color: var(--dxp-c-record-list-table-body-background-color, white);
-    border: none; /* Remove default border since we use container border */
+    border-top: 1px solid #e5e5e5;
 }
 
-/* Table header styling - match row typography */
-.slds-table thead th {
-    background-color: var(--dxp-c-record-list-column-header-background-color, #F3F3F3);
-    color: var(--dxp-c-record-list-column-header-text-color, initial);
-    border-bottom: var(--dxp-c-record-list-table-border-weight, 2px) solid var(--dxp-c-record-list-table-border-color, #d8dde6);
-    padding: var(--dxp-c-record-list-table-cell-padding, 0.5rem);
-    position: relative;
-    
-    /* Use same typography as table cells for consistency */
-    font-weight: var(--dxp-c-record-list-table-cell-font-weight, var(--dxp-s-body-font-weight));
-    font-style: var(--dxp-c-record-list-table-cell-font-style, var(--dxp-s-body-font-style));
-    font-size: var(--dxp-c-record-list-table-cell-font-size, var(--dxp-s-body-font-size));
-    font-family: var(--dxp-c-record-list-table-cell-font-family, var(--dxp-s-body-font-family));
-    text-transform: var(--dxp-c-record-list-table-cell-text-transform, var(--dxp-s-body-text-transform));
-    line-height: var(--dxp-c-record-list-table-cell-line-height, var(--dxp-s-body-line-height));
-    letter-spacing: var(--dxp-c-record-list-table-cell-letter-spacing, var(--dxp-s-body-letter-spacing));
-    text-shadow: var(--dxp-c-record-list-table-cell-text-shadow, var(--dxp-s-body-text-shadow));
+.action-divider {
+    color: #706e6b;
+    font-size: 0.875rem;
+    margin: 0 0.5rem;
 }
 
-/* Table body cells using DXP variables */
-.slds-table tbody td {
-    padding: var(--dxp-c-record-list-table-cell-padding, 0.75rem 0.5rem);
-    border-bottom: var(--dxp-c-record-list-table-row-divider-border-weight, 1px) solid var(--dxp-c-record-list-table-row-divider-border-color, #e5e5e5);
-    vertical-align: top;
-    font-weight: var(--dxp-c-record-list-table-cell-font-weight, var(--dxp-s-body-font-weight));
-    font-style: var(--dxp-c-record-list-table-cell-font-style, var(--dxp-s-body-font-style));
-    text-decoration: var(--dxp-c-record-list-table-cell-text-decoration, var(--dxp-s-body-text-decoration));
-    color: var(--dxp-c-record-list-table-cell-color, initial);
-    font-size: var(--dxp-c-record-list-table-cell-font-size, var(--dxp-s-body-font-size));
-    font-family: var(--dxp-c-record-list-table-cell-font-family, var(--dxp-s-body-font-family));
-    text-transform: var(--dxp-c-record-list-table-cell-text-transform, var(--dxp-s-body-text-transform));
-    line-height: var(--dxp-c-record-list-table-cell-line-height, var(--dxp-s-body-line-height));
-    letter-spacing: var(--dxp-c-record-list-table-cell-letter-spacing, var(--dxp-s-body-letter-spacing));
-    text-shadow: var(--dxp-c-record-list-table-cell-text-shadow, var(--dxp-s-body-text-shadow));
+
+/* ===== FILES GRID STYLES ===== */
+
+/* Files grid container with scrolling */
+.files-grid-container {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    overflow-y: auto;
+    max-height: 230px;
 }
 
-.slds-table tbody tr:hover {
-    background-color: var(--dxp-c-record-list-table-row-hover-color, #f3f3f3);
+/* Responsive column layouts */
+.files-grid-columns-1 {
+    grid-template-columns: 1fr;
 }
 
-.slds-table tbody tr:last-child td {
-    border-bottom: none;
+.files-grid-columns-2 {
+    grid-template-columns: 1fr 1fr;
 }
 
-/* Column header button styling */
-.slds-table thead th .slds-button_reset {
+.files-grid-columns-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.files-grid-columns-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* Mobile responsive - always single column */
+@media (max-width: 768px) {
+    .files-grid-columns-2,
+    .files-grid-columns-3,
+    .files-grid-columns-4,
+    .card-grid-columns-2,
+    .card-grid-columns-3,
+    .card-grid-columns-4 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Individual file items */
+.file-item {
     width: 100%;
-    text-align: left;
-    padding: 0;
-    color: inherit;
-    font-weight: inherit;
-    font-size: inherit;
-    text-transform: inherit;
-    letter-spacing: inherit;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d8dde6;
+    border-radius: 0.25rem;
+    overflow: hidden;
+    background-color: #ffffff;
+    position: relative;
+    cursor: pointer;
+    transition: box-shadow 0.1s ease;
+    animation: fadeInFile 0.3s ease-out;
+    min-height: 72px; /* Ensure consistent minimum height */
 }
 
-.slds-table thead th .slds-button_reset:hover {
-    color: #0070d2;
+.file-item:hover {
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
 }
 
-/* Lookup field styling */
- .slds-text-link {
-    text-decoration: underline;
+/* File box styling */
+.file-item .slds-box_x-small {
+    padding: 0.75rem;
+    border: none;
+    border-radius: 0;
+    transition: background-color 0.1s ease;
+    cursor: pointer;
+    background-color: #ffffff;
+    position: relative;
+    display: flex;
+    align-items: center; /* Vertically center content */
+    min-height: 72px; /* Match parent min-height */
+    height: 100%;
 }
 
-.slds-text-link:hover {
-    text-decoration: underline;
-} 
-
-/* Responsive table */
-.slds-scrollable_x {
-    overflow-x: auto;
-    overflow-y: hidden;
+.file-item:hover .slds-box_x-small {
+    background-color: #f3f3f3;
 }
 
-/* Animation for smooth state transitions */
-@keyframes fadeIn {
+/* Ensure the grid inside the box also centers vertically */
+.file-item .slds-box_x-small .slds-grid {
+    align-items: center;
+    height: 100%;
+}
+
+/* File title with max 2 lines and ellipsis */
+.file-item .slds-truncate {
+    white-space: normal !important;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.3;
+    max-height: 2.6em; /* 2 lines */
+}
+
+/* File hover overlay with blur effect - now covers entire card */
+.file-hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    border-radius: 0.25rem;
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.3); /* Slight white overlay to ensure blur visibility */
+}
+
+.file-item:hover .file-hover-overlay {
+    opacity: 1;
+}
+
+/* Icon styling - white with enhanced shadow for visibility */
+.file-hover-overlay lightning-icon {
+    --slds-c-icon-color-foreground: #ffffff !important;
+    --slds-c-icon-color-foreground-default: #ffffff !important;
+    transform: scale(1.3);
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9));
+}
+
+/* Animation for file items */
+@keyframes fadeInFile {
     from { 
         opacity: 0; 
         transform: translateY(10px); 
@@ -162,44 +421,238 @@
     }
 }
 
-.slds-table tbody tr {
-    animation: fadeIn 0.3s ease-out;
+
+/* ============================================
+   IMAGE MODAL
+   ============================================ */
+
+.slds-modal {
+    z-index: 9001;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .slds-card__header .slds-media {
-        flex-wrap: wrap;
-    }
-    
-    .slds-card__header .slds-no-flex {
-        margin-top: 0.5rem;
-        flex: 1 1 100%;
-    }
-    
-    .slds-table thead th,
-    .slds-table tbody td {
-        padding: 0.5rem 0.25rem;
-        font-size: 0.875rem;
-    }
-    
-    /* Reduce max height on mobile */
-    .slds-card__body.slds-card__body_inner {
-        max-height: 50vh;
-    }
+.slds-backdrop {
+    z-index: 9000;
 }
 
-/* Loading and error states */
-.slds-align_absolute-center {
+.modal-image-container {
+    text-align: center;
+    max-height: 70vh;
+    overflow: auto;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 200px;
 }
 
-/* Truncate text properly */
-.slds-truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.modal-image {
+    max-width: 100%;
+    max-height: 70vh;
+    width: auto;
+    height: auto;
+    border-radius: 0.25rem;
+    object-fit: contain;
+}
+
+.slds-modal__header {
+    position: relative;
+}
+
+.slds-modal__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1;
+}
+
+.slds-modal__title {
+    padding-right: 3rem;
+}
+
+.slds-modal__footer_directional {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.slds-modal_large .slds-modal__container {
+    width: 90%;
+    max-width: 1200px;
+    min-height: 40vh;
+}
+
+
+/* ============================================
+   STATE CONTAINERS
+   ============================================ */
+
+/* Loading state */
+.loading-container {
+    text-align: center;
+    padding: 1rem;
+}
+
+/* Error container */
+.error-container {
+    border-left: 4px solid #c23934;
+    padding: 1rem;
+    background-color: #fef7f7;
+    margin: 1rem;
+}
+
+/* No data container */
+.no-data-container {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+
+/* ============================================
+   DEBUG & CONFIGURATION DISPLAY
+   ============================================ */
+
+/* Debug section styling */
+.debug-section {
+    background-color: #f3f3f3;
+    border: 1px solid #d8dde6;
+    border-radius: 4px;
+    padding: 1rem;
+    margin: 1rem;
+}
+
+.related-list-details {
+    background-color: #fafaf9;
+    border-left: 4px solid #0176d3;
+    padding: 1rem;
+    margin: 1rem;
+}
+
+.debug-code {
+    font-family: 'Courier New', monospace;
+    background-color: #f4f6f9;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.875rem;
+}
+
+.button-info {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background-color: #ffffff;
+    border: 1px solid #d8dde6;
+    border-radius: 4px;
+}
+
+.related-list-item {
+    border-bottom: 1px solid #e5e5e5;
+    padding: 0.75rem 0;
+}
+
+.related-list-item:last-child {
+    border-bottom: none;
+}
+
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Mode indicator styling for debug badges */
+.mode-indicator {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+}
+
+.mode-indicator--arl {
+    background-color: #e8f4fd;
+    color: #0176d3;
+    border: 1px solid #c9dbea;
+}
+
+.mode-indicator--soql {
+    background-color: #fef7e0;
+    color: #b45500;
+    border: 1px solid #ddbd4a;
+}
+
+/* Configuration status styling */
+.config-status {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    margin: 0.5rem 0;
+}
+
+.config-status--valid {
+    background-color: #f3f9f4;
+    color: #4bca81;
+    border: 1px solid #4bca81;
+}
+
+.config-status--invalid {
+    background-color: #fef7f7;
+    color: #ea001e;
+    border: 1px solid #ea001e;
+}
+
+.config-status--warning {
+    background-color: #fef8f2;
+    color: #ffb75d;
+    border: 1px solid #ffb75d;
+}
+
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Desktop - Large screens (1400px+) */
+@media (min-width: 1400px) {
+    .header-slots-row {
+        flex: 0 1 auto;
+        width: auto;
+        margin-left: 1rem;
+    }
+
+    .header-slots-row .slds-grid {
+        grid-template-columns: repeat(4, auto) !important;
+        justify-items: center;
+    }
+}
+
+/* Tablet & Mobile (768px and below) */
+@media (max-width: 768px) {
+    /* Debug input rows - stack vertically */
+    .input-row {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Files and Card grids - always single column on mobile */
+    .files-grid-columns-2,
+    .files-grid-columns-3,
+    .files-grid-columns-4,
+    .card-grid-columns-2,
+    .card-grid-columns-3,
+    .card-grid-columns-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Modal adjustments */
+    .slds-modal_large .slds-modal__container {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .modal-image {
+        max-height: 50vh;
+    }
+    
+    .slds-modal__close {
+        top: 0.5rem;
+        right: 0.5rem;
+    }
 }

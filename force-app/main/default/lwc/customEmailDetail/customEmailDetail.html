@@ -1,0 +1,81 @@
+<template>
+    <div class="slds-card">
+        <div class="slds-card__body slds-card__body_inner">
+            <template if:true={currentRecordId}>
+                <template if:true={emailData}>
+                    <div class="slds-form slds-form_stacked">
+                        <div class="slds-form-element slds-form-element_stacked">
+                            <span class="slds-form-element__label">From Address</span>
+                            <div class="slds-form-element__control slds-grid">
+                                <div class="slds-grow">
+                                    <div class="slds-form-element__static">{emailData.FromAddress}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slds-form-element slds-form-element_stacked">
+                            <span class="slds-form-element__label">From Name</span>
+                            <div class="slds-form-element__control slds-grid">
+                                <div class="slds-grow">
+                                    <div class="slds-form-element__static">{emailData.FromName}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slds-form-element slds-form-element_stacked">
+                            <span class="slds-form-element__label">To Address</span>
+                            <div class="slds-form-element__control slds-grid">
+                                <div class="slds-grow">
+                                    <div class="slds-form-element__static">{emailData.ToAddress}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slds-form-element slds-form-element_stacked">
+                            <span class="slds-form-element__label">CC Address</span>
+                            <div class="slds-form-element__control slds-grid">
+                                <div class="slds-grow">
+                                    <div class="slds-form-element__static">{emailData.CcAddress}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slds-form-element slds-form-element_stacked">
+                            <span class="slds-form-element__label">BCC Address</span>
+                            <div class="slds-form-element__control slds-grid">
+                                <div class="slds-grow">
+                                    <div class="slds-form-element__static">{emailData.BccAddress}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slds-form-element slds-form-element_stacked">
+                            <span class="slds-form-element__label">Subject</span>
+                            <div class="slds-form-element__control slds-grid">
+                                <div class="slds-grow">
+                                    <div class="slds-form-element__static">{emailData.Subject}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slds-form-element slds-form-element_stacked">
+                            <span class="slds-form-element__label">Body</span>
+                            <div class="slds-form-element__control slds-grid">
+                                <div class="slds-grow">
+                                    <div class="slds-form-element__static">{emailData.TextBody}</div>
+                                </div>
+                            </div>
+                        </div>
+                    
+                    </div>
+                </template>
+                <template if:true={error}>
+                    <div class="slds-text-color_error">Error loading email data</div>
+                </template>
+            </template>
+            <template if:false={currentRecordId}>
+                <div class="slds-text-color_error">No Email record ID provided</div>
+            </template>
+        </div>
+    </div>
+</template>

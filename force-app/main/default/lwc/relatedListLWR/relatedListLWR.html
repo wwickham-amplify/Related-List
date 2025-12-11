@@ -1,190 +1,328 @@
-<!-- relatedList.html -->
 <template>
-    <div class="slds-card">
-        <!-- Header with Title, Count, and Refresh Button -->
-        <div class="slds-card__header slds-grid">
-            <header class="slds-media slds-media_center slds-has-flexi-truncate">
-                <!-- Icon and Title -->
-                <div class="slds-media__figure">
-                    <span class="slds-icon_container" lwc:if={listIcon}>
-                        <lightning-icon 
-                            icon-name={listIcon} 
-                            size="small" 
-                            alternative-text={selectedObject}>
-                        </lightning-icon>
-                    </span>
-                </div>
-                <div class="slds-media__body">
-                    <h2 class="slds-card__header-title">
-                        <span class={titleClasses}>{listTitle}</span>
-                    </h2>
-                </div>
-                
-                <!-- Refresh Button -->
-                <div class="slds-no-flex">
-                    <lightning-button-icon 
-                        icon-name="utility:refresh" 
-                        alternative-text="Refresh"
-                        title="Refresh"
-                        onclick={handleRefresh}
-                        class="slds-m-left_x-small">
-                    </lightning-button-icon>
-                </div>
-            </header>
-        </div>
-
-        <!-- Card Body with Height Limit -->
-        <div class="slds-card__body slds-card__body_inner">
-            <!-- Loading Spinner -->
-            <template lwc:if={isLoading}>
-                <div class="slds-align_absolute-center slds-p-vertical_large">
-                    <lightning-spinner 
-                        alternative-text="Loading records..." 
-                        size="medium">
-                    </lightning-spinner>
-                </div>
-            </template>
-
-            <!-- Error State -->
-            <template lwc:if={hasError}>
-                <div class="slds-align_absolute-center slds-p-vertical_large">
-                    <div class="slds-text-align_center">
-                        <div class="slds-p-bottom_medium">
+<div class="component-container">
+    <div class="header-section">
+        <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+            <div class="slds-col">
+                <h3 class="slds-grid slds-grid_vertical-align-center header-title">
+                        <!-- SLDS Icon - shown when iconType is 'slds' -->
+                        <template if:true={showStandardIcon}>
                             <lightning-icon 
-                                icon-name="utility:error" 
-                                size="large" 
-                                variant="error">
+                                icon-name={relatedListIcon} 
+                                size="medium" 
+                                alternative-text="Related List Icon"
+                                class="slds-m-right_x-small">
                             </lightning-icon>
-                        </div>
-                        <div class="slds-text-heading_medium slds-p-bottom_small">
-                            Error Loading {selectedObject}
-                        </div>
-                        <div class="slds-text-body_regular slds-text-color_weak slds-p-bottom_medium">
-                            {errorMessage}
-                        </div>
-                        <lightning-button
-                            label="Go to Error Page"
-                            variant="neutral"
-                            onclick={handleErrorNavigation}>
-                        </lightning-button>
-                    </div>
-                </div>
-            </template>
-
-            <!-- No Records State -->
-            <template lwc:if={hasNoRecords}>
-                <div class="slds-align_absolute-center slds-p-vertical_large">
-                    <div class="slds-text-align_center">
-                        <div class="slds-text-heading_medium">
-                            {emptyStateMessage}
-                        </div>
-                    </div>
-                </div>
-            </template>
-
-            <!-- Records Content with Scrolling -->
-            <template lwc:if={hasRecords}>
-                <div class="records-content-area">
-                    <!-- Table View -->
-                    <template lwc:if={showListView}>
-                        <div class="related-list-table">
-                            <div class="slds-scrollable_x">
-                                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
-                                    <thead>
-                                        <tr class="slds-line-height_reset">
-                                            <template for:each={tableColumns} for:item="column">
-                                                <th key={column.apiName} class="slds-text-title_caps" scope="col">
-                                                    <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
-                                                        <template lwc:if={column.sortable}>
-                                                            <button 
-                                                                class="slds-button slds-button_reset slds-text-title_caps"
-                                                                onclick={handleSort}
-                                                                data-field-name={column.apiName}
-                                                                title={column.label}>
-                                                                <div class="slds-grid slds-grid_vertical-align-center">
-                                                                    <span class="slds-assistive-text">Sort by: </span>
-                                                                    <span class="slds-truncate" title={column.label}>{column.label}</span>
-                                                                    <template lwc:if={column.sortedDirection}>
-                                                                        <template lwc:if={column.sortedDirectionAsc}>
-                                                                            <lightning-icon 
-                                                                                icon-name="utility:arrowup"
-                                                                                size="xx-small"
-                                                                                class="slds-m-left_xx-small">
-                                                                            </lightning-icon>
-                                                                        </template>
-                                                                        <template lwc:else>
-                                                                            <lightning-icon 
-                                                                                icon-name="utility:arrowdown"
-                                                                                size="xx-small"
-                                                                                class="slds-m-left_xx-small">
-                                                                            </lightning-icon>
-                                                                        </template>
-                                                                    </template>
-                                                                </div>
-                                                            </button>
-                                                        </template>
-                                                        <template lwc:else>
-                                                            <span class="slds-truncate" title={column.label}>{column.label}</span>
-                                                        </template>
-                                                    </div>
-                                                </th>
-                                            </template>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <template for:each={tableData} for:item="row">
-                                            <tr key={row.id} class="slds-hint-parent">
-                                                <template for:each={row.cells} for:item="cell">
-                                                    <td key={cell.fieldName} role="gridcell">
-                                                        <div class="slds-truncate">
-                                                            <!-- Clickable Record Link (first field when target page is set) -->
-                                                            <template lwc:if={cell.isClickableRecord}>
-                                                                <a href={cell.recordUrl}
-                                                                   onclick={handleRecordNavigation}
-                                                                   data-record-url={cell.recordUrl}
-                                                                   class="slds-text-link"
-                                                                   title={cell.value}>
-                                                                    {cell.value}
-                                                                </a>
-                                                            </template>
-                                                            
-                                                            <!-- Regular Lookup Field (non-clickable) -->
-                                                            <template lwc:elseif={cell.isLookup}>
-                                                                <span title={cell.value} class="slds-text-color_weak">
-                                                                    {cell.value}
-                                                                </span>
-                                                            </template>
-                                                            
-                                                            <!-- Regular Field -->
-                                                            <template lwc:else>
-                                                                <span title={cell.value}>
-                                                                    {cell.value}
-                                                                </span>
-                                                            </template>
-                                                        </div>
-                                                    </td>
-                                                </template>
-                                            </tr>
-                                        </template>
-                                    </tbody>
-                                </table>
+                        </template>
+                        
+                        <!-- Icon Slot - shown when iconType is 'slot' -->
+                        <template if:true={showIconSlot}>
+                            <div class="slds-m-right_x-small">
+                                <slot name="iconSlot"></slot>
                             </div>
+                        </template>
+                        
+                        <span>{relatedListLabel}</span>
+                    </h3>
+            </div>
+            
+            <div class="slds-col slds-no-flex">
+                <div class="slds-grid slds-grid_vertical-align-center">
+                    <div class="slds-col slds-m-right_small">
+                        <lightning-button-icon
+                            icon-name="utility:refresh"
+                            alternative-text="Refresh"
+                            title="Refresh"
+                            onclick={handleRefresh}
+                            disabled={isLoading}>
+                        </lightning-button-icon>
+                    </div>
+                    
+                    <template if:true={showSlot1}>
+                        <div class="slds-col slds-m-right_xx-small">
+                            <slot name="slot1"></slot>
+                        </div>
+                    </template>
+                    <template if:true={showSlot2}>
+                        <div class="slds-col slds-m-right_xx-small">
+                            <slot name="slot2"></slot>
+                        </div>
+                    </template>
+                    <template if:true={showSlot3}>
+                        <div class="slds-col slds-m-right_xx-small">
+                            <slot name="slot3"></slot>
+                        </div>
+                    </template>
+                    <template if:true={showSlot4}>
+                        <div class="slds-col">
+                            <slot name="slot4"></slot>
                         </div>
                     </template>
                 </div>
-
-                <!-- Fixed View More Button -->
-                <template lwc:if={hasMoreRecords}>
-                    <div class="view-more-container">
-                        <lightning-button 
-                            label={viewMoreButtonLabel}
-                            title="Load more records"
-                            onclick={handleViewMore}
-                            variant="neutral">
-                        </lightning-button>
-                    </div>
-                </template>
-            </template>
+            </div>
         </div>
     </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        
+        <!-- Loading State -->
+        <template if:true={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner 
+                    alternative-text="Loading..." 
+                    size="medium">
+                </lightning-spinner>
+                <p class="slds-m-top_small">
+                    Loading data...
+                </p>
+            </div>
+        </template>
+
+        <!-- Error State -->
+        <template if:true={error}>
+            <div class="error-container">
+                <lightning-icon 
+                    icon-name="utility:error" 
+                    size="small" 
+                    variant="error"
+                    class="slds-m-right_small">
+                </lightning-icon>
+                <div>
+                    <h4 class="slds-text-heading_small">Error Loading Data</h4>
+                    <p class="slds-m-top_x-small">{error}</p>
+                    <p class="slds-m-top_x-small slds-text-body_small">
+                        <strong>Data Source:</strong> {dataSourceMode}
+                    </p>
+                </div>
+            </div>
+        </template>
+
+        <!-- Empty State -->
+        <template if:true={showEmptyState}>
+            <div class="no-data-container">
+                <p>No records available.</p>
+            </div>
+        </template>
+
+        <!-- Data Table -->
+        <template if:true={showTable}>
+            <div class={tableContainerClass}>
+                <lightning-datatable
+                    key-field="Id"
+                    data={displayedRecords}
+                    columns={columns}
+                    hide-checkbox-column={hideCheckboxColumnValue}
+                    show-row-number-column={showRowNumberColumnValue}
+                    resize-column-disabled={resizeColumnDisabled}
+                    sorted-by={sortedBy}
+                    sorted-direction={sortDirection}
+                    onsort={handleSort}
+                    onrowaction={handleRowAction}
+                    enable-infinite-loading={enableInfiniteLoading}
+                    onloadmore={handleLoadMore}
+                    is-loading={isLoadingMore}
+                    class="dxp-link-text responsive-datatable">
+                </lightning-datatable>
+            </div>
+        </template>
+
+        <!-- Card View -->
+        <template if:true={showCards}>
+            <div class="fixed-header-table">
+                <div class={cardGridClass}>
+                    <template for:each={displayedRecords} for:item="record">
+                        <div key={record.Id} class="record-card">
+                            <!-- Card Title (First Field) -->
+                            <template if:true={enableRecordLinking}>
+                                <a href={record.recordUrl} class="card-title-link" target="_blank">
+                                    {record.cardData.title}
+                                </a>
+                            </template>
+                            <template if:false={enableRecordLinking}>
+                                <div class="card-title">
+                                    {record.cardData.title}
+                                </div>
+                            </template>
+                            
+                            <!-- Remaining Fields -->
+                            <template for:each={record.cardData.fields} for:item="field">
+                                <div key={field.key} class="card-field">
+                                    <span class="card-label" title={field.label}>{field.label}:</span>
+                                    <span class="card-value" title={field.value}>{field.value}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- Files Grid View -->
+            <template if:true={showFilesGrid}>
+                <div class="fixed-header-table">
+                    <div class={filesGridClass}>
+                        <template for:each={displayedRecords} for:item="file">
+                            <div key={file.id} 
+                                class="file-item"
+                                onclick={handleFileClick}
+                                data-id={file.contentDocumentId}
+                                data-name={file.title}
+                                data-size={file.formattedSize}
+                                data-download-url={file.downloadUrl}
+                                data-is-image={file.isImage}
+                                title={file.title}>
+                                
+                                <div class="slds-box slds-box_x-small slds-theme_shade">
+                                    <div class="slds-grid slds-grid_vertical-align-center">
+                                        <div class="slds-col slds-no-flex slds-m-right_x-small">
+                                            <lightning-icon 
+                                                icon-name={file.icon} 
+                                                size="small"
+                                                alternative-text={file.title}>
+                                            </lightning-icon>
+                                        </div>
+                                        <div class="slds-col slds-has-flexi-truncate">
+                                            <div class="slds-text-body_regular slds-text-color_default slds-truncate" 
+                                                title={file.title}>
+                                                {file.title}
+                                            </div>
+                                            <div class="slds-text-body_small slds-text-color_weak">
+                                                <lightning-formatted-date-time 
+                                                    value={file.createdDate}
+                                                    year="numeric"
+                                                    month="short"
+                                                    day="numeric">
+                                                </lightning-formatted-date-time> • {file.formattedSize} • {file.fileExtension}
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Hover overlay -->
+                                    <div class="file-hover-overlay">
+                                        <template if:true={file.isImage}>
+                                            <lightning-icon 
+                                                icon-name="utility:preview" 
+                                                size="small"
+                                                class="slds-text-color_inverse"
+                                                alternative-text="Preview image">
+                                            </lightning-icon>
+                                        </template>
+                                        <template if:false={file.isImage}>
+                                            <lightning-icon 
+                                                icon-name="utility:download" 
+                                                size="small"
+                                                class="slds-text-color_inverse"
+                                                alternative-text="Download file">
+                                            </lightning-icon>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+        <!-- Action Buttons Footer -->
+        <template if:true={showActionButtonContainer}>
+            <div class="action-footer">
+                <template if:true={showLoadMoreButton}>
+                    <a href="javascript:void(0);" onclick={handleViewMore} class="dxp-link-text action-link">
+                        {loadMoreButtonLabel}
+                    </a>
+                </template>
+                
+                <template if:true={showBothButtons}>
+                    <span class="action-divider">|</span>
+                </template>
+                
+                <template if:true={showViewAll}>
+                    <a href="javascript:void(0);" onclick={handleViewAll} class="dxp-link-text action-link">
+                        View All
+                    </a>
+                </template>
+            </div>
+        </template>
+    </div>
+
+    <!-- Image Preview Modal -->
+        <template if:true={showImageModal}>
+            <section role="dialog" 
+                    tabindex="-1" 
+                    aria-modal="true" 
+                    aria-labelledby="modal-heading" 
+                    class="slds-modal slds-fade-in-open slds-modal_large">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" 
+                                title="Close" 
+                                onclick={handleCloseModal}>
+                            <lightning-icon 
+                                icon-name="utility:close" 
+                                alternative-text="Close" 
+                                size="small">
+                            </lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading" class="slds-modal__title slds-hyphenate">
+                            <strong>{modalImageName}</strong>
+                        </h2>
+                    </header>
+                    
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <!-- Loading State -->
+                        <template if:true={isLoadingModalImage}>
+                            <div class="slds-align_absolute-center slds-p-vertical_large">
+                                <lightning-spinner 
+                                    alternative-text="Loading image..." 
+                                    size="medium">
+                                </lightning-spinner>
+                                <div class="slds-text-body_regular slds-m-top_small">
+                                    Loading image...
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Image Error Display -->
+                        <template if:true={hasModalImageError}>
+                            <template if:false={isLoadingModalImage}>
+                                <div class="slds-notify slds-notify_alert slds-theme_error slds-m-bottom_medium" 
+                                    role="alert">
+                                    <span class="slds-assistive-text">error</span>
+                                    <h2>{modalImageLoadError}</h2>
+                                </div>
+                            </template>
+                        </template>
+
+                        <!-- Image Display -->
+                        <template if:true={modalImageUrl}>
+                            <template if:false={isLoadingModalImage}>
+                                <div class="modal-image-container">
+                                    <img src={modalImageUrl} 
+                                        alt={modalImageName}
+                                        class="modal-image"
+                                        onerror={handleModalImageError}
+                                        onload={handleModalImageLoad} />
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                    
+                    <footer class="slds-modal__footer">
+                        <div class="slds-modal__footer_directional">
+                            <lightning-button 
+                                variant="brand"
+                                label="Download"
+                                icon-name="utility:download"
+                                onclick={handleDownloadFromModal}>
+                            </lightning-button>
+                        </div>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open" onclick={handleModalBackdropClick}></div>
+        </template>
+
+</div>
 </template>

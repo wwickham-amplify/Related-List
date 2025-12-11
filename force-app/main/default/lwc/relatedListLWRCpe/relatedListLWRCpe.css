@@ -1,0 +1,46 @@
+/* Custom Property Editor Styles */
+.slds-form-element {
+    margin-bottom: 1rem;
+}
+
+/* Ensure proper spacing between form elements */
+.slds-m-bottom_medium {
+    margin-bottom: 1rem !important;
+}
+
+/* Custom textarea for SOQL query */
+.customTextArea {
+    --slds-c-textarea-sizing-min-height: 300px;
+}
+
+/* Modal content styling */
+.slds-modal__content code {
+    font-family: 'Courier New', Monaco, monospace;
+    font-size: 0.875rem;
+    background-color: transparent;
+}
+
+/* Dual listbox styling */
+.slds-dual-listbox {
+    width: 100%;
+}
+
+/* Help text styling */
+.slds-form-element__help {
+    font-size: 0.75rem;
+    color: #706e6b;
+    margin-top: 0.25rem;
+}
+
+/* DXP Secondary Button styling for action buttons */
+.action-button {
+    --slds-c-button-color-background: var(--dxp-s-secondary-button-color-background, #0176d3);
+    --slds-c-button-color-background-hover: var(--dxp-s-secondary-button-color-background-hover, #014486);
+    --slds-c-button-color-background-focus: var(--dxp-s-secondary-button-color-background-focus, #014486);
+    --slds-c-button-color-border: var(--dxp-s-secondary-button-color-border, #0176d3);
+    --slds-c-button-color-border-hover: var(--dxp-s-secondary-button-color-border-hover, #014486);
+    --slds-c-button-color-border-focus: var(--dxp-s-secondary-button-color-border-focus, #014486);
+    --slds-c-button-text-color: var(--dxp-s-secondary-button-text-color, #ffffff);
+    --slds-c-button-text-color-hover: var(--dxp-s-secondary-button-text-color-hover, #ffffff);
+    --slds-c-button-text-color-focus: var(--dxp-s-secondary-button-text-color-focus, #ffffff);
+}
