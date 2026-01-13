@@ -18,54 +18,106 @@ public with sharing class RelatedArticlesController {
     }
     
     @AuraEnabled(cacheable=true)
-    public static List<RelatedArticleWrapper> getRelatedArticles(Id currentArticleId) {
+    public static List<RelatedArticleWrapper> getRelatedArticles(Id currentArticleId, Boolean customerPortal) {
         try {
             List<RelatedArticleWrapper> relatedArticles = new List<RelatedArticleWrapper>();
-            Set<Id> excludedArticleIds = new Set<Id>{currentArticleId};
-            
-            // Get current article details and its categories
+
             KnowledgeArticleVersion currentArticle = getCurrentArticle(currentArticleId);
             if (currentArticle == null) {
                 return relatedArticles;
             }
-            List<String> currentArticleCategories = getArticleCategories(currentArticleId);
-            System.debug('Categories: ' + currentArticleCategories);
-            if (!currentArticleCategories.isEmpty()) {
-                // Scenario 1: Article has Program categories
-                relatedArticles = findArticlesByCategories(currentArticleCategories, excludedArticleIds, currentArticleId, 'Products');
-                System.debug('Related Articles: ' + relatedArticles);
-                // If we need more articles, supplement with title-based matches
-                if (relatedArticles.size() < 5) {
-                    List<RelatedArticleWrapper> titleMatches = findArticlesByTitleKeywords(
-                        currentArticleCategories, excludedArticleIds, 5 - relatedArticles.size()
-                    );
-                    relatedArticles.addAll(titleMatches);
-                }
-            } else {
-                // Scenario 2: Article has no Program categories - check title for keywords
-                List<String> networkCategories = getNetworkDataCategories();
-                String matchedCategory = findCategoryInTitle(currentArticle.Title, networkCategories);
-                System.debug('Matched Category: ' + matchedCategory);
-                if (String.isNotBlank(matchedCategory)) {
-                    // Treat as if article had this category
-                    List<String> impliedCategories = new List<String>{matchedCategory};
-                    String parentCategory = findParentCategory(matchedCategory);
-                    relatedArticles = findArticlesByCategories(impliedCategories, excludedArticleIds, currentArticleId, parentCategory);
-                    
-                    // Supplement with title matches if needed
+
+            if( customerPortal != true ) {
+                //In IS Portal, use data category matching
+                
+                // Get current article details and its categories
+                /*KnowledgeArticleVersion currentArticle = getCurrentArticle(currentArticleId);
+                if (currentArticle == null) {
+                    return relatedArticles;
+                }*/
+                Set<Id> excludedArticleIds = new Set<Id>{currentArticleId};
+                List<String> currentArticleCategories = getArticleCategories(currentArticleId);
+                System.debug('Categories: ' + currentArticleCategories);
+                if (!currentArticleCategories.isEmpty()) {
+                    // Scenario 1: Article has Program categories
+                    relatedArticles = findArticlesByCategories(currentArticleCategories, excludedArticleIds, currentArticleId, 'Products');
+                    System.debug('Related Articles: ' + relatedArticles);
+                    // If we need more articles, supplement with title-based matches
                     if (relatedArticles.size() < 5) {
                         List<RelatedArticleWrapper> titleMatches = findArticlesByTitleKeywords(
-                            impliedCategories, excludedArticleIds, 5 - relatedArticles.size()
+                            currentArticleCategories, excludedArticleIds, 5 - relatedArticles.size()
                         );
                         relatedArticles.addAll(titleMatches);
                     }
+                } else {
+                    // Scenario 2: Article has no Program categories - check title for keywords
+                    List<String> networkCategories = getNetworkDataCategories();
+                    String matchedCategory = findCategoryInTitle(currentArticle.Title, networkCategories);
+                    System.debug('Matched Category: ' + matchedCategory);
+                    if (String.isNotBlank(matchedCategory)) {
+                        // Treat as if article had this category
+                        List<String> impliedCategories = new List<String>{matchedCategory};
+                        String parentCategory = findParentCategory(matchedCategory);
+                        relatedArticles = findArticlesByCategories(impliedCategories, excludedArticleIds, currentArticleId, parentCategory);
+                        
+                        // Supplement with title matches if needed
+                        if (relatedArticles.size() < 5) {
+                            List<RelatedArticleWrapper> titleMatches = findArticlesByTitleKeywords(
+                                impliedCategories, excludedArticleIds, 5 - relatedArticles.size()
+                            );
+                            relatedArticles.addAll(titleMatches);
+                        }
+                    }
+                    // If no matches found, return empty list (component will show "No related articles")
                 }
-                // If no matches found, return empty list (component will show "No related articles")
+            } else {
+                //In the Customer Portal, find related articles by the Knowledge Collection Article junction object
+                Knowledge__kav kav = [
+                    SELECT Id, KnowledgeArticleId, Title
+                    FROM Knowledge__kav
+                    WHERE KnowledgeArticleId = :currentArticle.KnowledgeArticleId
+                    LIMIT 1
+                ];
+                System.debug('kav: ' + kav);
+
+                List<Knowledge_Collection_Articles__c> collectionJunctions = [
+                    SELECT Id, Name, Knowledge_Article__c, Knowledge_Collection__c
+                    FROM Knowledge_Collection_Articles__c
+                    WHERE Knowledge_Article__c = :kav.Id
+                ];
+                System.debug('collectionJunctions: ' + collectionJunctions);
+
+                Set<String> knowledgeCollectionSet = new Set<String>();
+                for(Knowledge_Collection_Articles__c kca : collectionJunctions) {
+                    knowledgeCollectionSet.add(kca.Knowledge_Collection__c);
+                }
+
+                List<Knowledge_Collection_Articles__c> relatedkca = [
+                    SELECT Id, Name, Knowledge_Article__c, Knowledge_Collection__c
+                    FROM Knowledge_Collection_Articles__c
+                    WHERE Knowledge_Collection__c IN :knowledgeCollectionSet
+                ];
+                System.debug('relatedkca: ' + relatedkca);
+
+                Set<String> relatedArticleIds = new Set<String>();
+                for(Knowledge_Collection_Articles__c kca : relatedkca) {
+                    relatedArticleIds.add(kca.Knowledge_Article__c);
+                }
+
+                String query = 'SELECT Id, Title, UrlName, LastPublishedDate ' +
+                    'FROM KnowledgeArticleVersion ' +
+                    'WHERE Id IN :relatedArticleIds AND Id != \'' + currentArticle.Id + '\' ' +
+                    'AND LastPublishedDate >= LAST_N_MONTHS:18 AND PublishStatus = \'Online\' ' +
+                    'ORDER BY ArticleCaseAttachCount DESC, LastPublishedDate DESC LIMIT 6';
+                System.debug('query: ' + query);
+                List<KnowledgeArticleVersion> results = Database.query(query);
+                for (KnowledgeArticleVersion article : results) {
+                    relatedArticles.add(new RelatedArticleWrapper(article, 'category'));
+                }
             }
             System.debug('# Related Articles: ' + relatedArticles.size());
             System.debug('Related Articles: ' + relatedArticles);
             return relatedArticles;
-            
         } catch (Exception e) {
             System.debug('Error in getRelatedArticles: ' + e.getMessage());
             return new List<RelatedArticleWrapper>();
@@ -75,7 +127,7 @@ public with sharing class RelatedArticlesController {
     private static KnowledgeArticleVersion getCurrentArticle(Id articleId) {
         try {
             return [
-                SELECT Id, Title, UrlName, LastPublishedDate 
+                SELECT Id, Title, UrlName, LastPublishedDate, KnowledgeArticleId
                 FROM KnowledgeArticleVersion
                 WHERE Id = :articleId 
                 AND PublishStatus = 'Online' 
@@ -246,7 +298,7 @@ public with sharing class RelatedArticlesController {
                 if(word == '2E') {
                     word = 'CKLA 2';
                 }
-                if (String.isNotBlank(word) && word.length() > 1 && word.toLowerCase() != 'amplify' && word.toLowerCase() != 'and' && word.toLowerCase() != 'ckla' && titleLower.contains(word.toLowerCase())) {
+                if (String.isNotBlank(word) && word.length() > 1 && word.toLowerCase() != 'amplify' && word.toLowerCase() != 'and' && word.toLowerCase() != 'ckla' && word.toLowerCase() != 'materials' && titleLower.contains(word.toLowerCase())) {
                     return category;
                 }
             }

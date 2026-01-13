@@ -4,6 +4,7 @@ import getRelatedArticles from '@salesforce/apex/RelatedArticlesController.getRe
 
 export default class RelatedArticles extends LightningElement {
     @api recordId; // Knowledge Article Version Id
+    @api customerPortalToggle;
     componentTitle = 'Related Articles';
     //@api iconName = ''; // Static SLDS icon name (e.g., 'standard:knowledge')
     //@api initialLoadCount = 3; // Number of articles to show initially
@@ -15,7 +16,7 @@ export default class RelatedArticles extends LightningElement {
     error = null;
 
     // Wire method to get related articles
-    @wire(getRelatedArticles, { currentArticleId: '$recordId' })
+    @wire(getRelatedArticles, { currentArticleId: '$recordId', customerPortal: '$customerPortalToggle' })
     wiredArticles({ error, data }) {
         this.isLoading = false;
         if (data) {
