@@ -1,0 +1,24 @@
+<template>
+    <div style="position: relative;display: flex;justify-content: center">
+        <lightning-button 
+            variant={variant} 
+            label={label}
+            title={title}
+            icon-name={iconName}
+            icon-position={iconPosition}
+            onclick={handleNavigate}
+            onmouseover={handleHover}
+            onmouseout={endHover}>
+        </lightning-button>
+        <section lwc:if={showPopup} style="position: absolute;text-wrap: wrap;width: 25vw;margin-top: 40px;margin-bottom: 40px;background-color: white;max-height: 30vh;overflow: hidden;padding: 10px;" class="slds-popover">
+            <template lwc:if={isLoading}>
+                <lightning-spinner size="small"></lightning-spinner>
+            </template>
+            <div style="transform: scale(0.5, 0.5) translate(-50%,0%);width: 200%;transform-origin: top;">
+                <c-knowledge-article-viewer-l-w-r record-id="" url-name={urlSlug} show-title="true" show-summary="true"></c-knowledge-article-viewer-l-w-r>
+                <!--This div is invisible and blocks the content in the popup, so users can't click links or buttons insde the popup. Technically it's not needed because the popup dissapears as soon as the cursor leaves the button.-->
+                <div style="position: absolute;width: stretch;height: stretch;top: 0;"></div>
+            </div>
+        </section>
+    </div>
+</template>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Custom LWR Navigation Button</masterLabel>
+    <description>Customizable nav button for LWR pages.</description>
+    <targets>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="label" label="Label" type="String"/>
+            <property name="title" label="Hover Text" type="String"/>
+            <property name="variant" label="Button Style" type="String" datasource="base,neutral,brand,brand-outline,destructive,destructive-text,inverse,success" default="neutral"/>
+            <property name="iconName" label="Icon Name" type="String" placeholder="utility:new_window" description="The Lightning Design System name of the icon. Names are written in the format 'utility:down' where 'utility' is the category, and 'down' is the specific icon to be displayed. If left blank, icon will not be displayed."/>
+            <property name="iconPosition" label="Icon Position" type="String" datasource="left,right" default="left" description="Describes the position of the icon with respect to the button label. Options include left and right. This value defaults to left."/>
+            <property name="url" label="Navigate to URL" type="String"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>
