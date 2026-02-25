@@ -12,7 +12,7 @@
         <targetConfig targets="lightningCommunity__Default">
             <property name="label" label="Label" type="String"/>
             <property name="title" label="Hover Text" type="String"/>
-            <property name="variant" label="Button Style" type="String" datasource="base,neutral,brand,brand-outline,destructive,destructive-text,inverse,success" default="neutral"/>
+            <property name="variant" label="Button Style" type="String" datasource="Primary,Secondary,Tertiary" default="Primary"/>
             <property name="iconName" label="Icon Name" type="String" placeholder="utility:new_window" description="The Lightning Design System name of the icon. Names are written in the format 'utility:down' where 'utility' is the category, and 'down' is the specific icon to be displayed. If left blank, icon will not be displayed."/>
             <property name="iconPosition" label="Icon Position" type="String" datasource="left,right" default="left" description="Describes the position of the icon with respect to the button label. Options include left and right. This value defaults to left."/>
             <property name="url" label="Navigate to URL" type="String"/>

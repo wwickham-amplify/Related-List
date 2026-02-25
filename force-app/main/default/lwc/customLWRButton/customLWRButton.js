@@ -9,8 +9,16 @@ export default class CustomLWRButton extends NavigationMixin(LightningElement) {
     @api iconPosition;
     @api url;
 
+    get _variant() {
+        const styleMap = {
+            'Primary':   'brand',
+            'Secondary': 'brand-outline',
+            'Tertiary':  'base'
+        };
+        return styleMap[this.variant] || 'brand';
+    }
+
     showPopup = false;
-    isLoading = false;
 
     get urlSlug() {
         return this.url.split('article/')[1];
@@ -29,13 +37,13 @@ export default class CustomLWRButton extends NavigationMixin(LightningElement) {
 
     handleHover(e) {
         this.showPopup = true;
-        this.isLoading = true;
-        setTimeout(() => {
-            this.isLoading = false;
-        }, 500);
+        this.timeout = setTimeout(() => {
+            this.template.querySelector('.slds-popover')?.classList.remove('hidden');
+        }, 300);
     }
 
     endHover(e) {
+        clearTimeout(this.timeout);
         this.showPopup = false;
     }
 }
